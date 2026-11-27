@@ -7,9 +7,14 @@ const fs = require('fs');
 const path = require('path');
 const DATA = process.env.DATA_DIR || '/data';
 try { fs.mkdirSync(DATA, { recursive: true }); } catch (_) {}
-const ADMIN_USER = process.env.ADMIN_USER || '';
-const ADMIN_HASH = process.env.ADMIN_PASS_HASH || ''; // scrypt$salt$hash (hex)
-const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+// Admin login lives in /data/admin.json (created once from the admin page with a one-time setup code).
+const ADMIN_FILE = path.join(DATA, 'admin.json');
+const readAdmin = () => { try { return JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8')); } catch (_) { return null; } };
+const SETUP_SHA = process.env.SETUP_CODE_SHA256 || '';
+const KEY_FILE = path.join(DATA, 'secret.key');
+let SECRET = process.env.SESSION_SECRET || '';
+if (!SECRET) { try { SECRET = fs.readFileSync(KEY_FILE, 'utf8').trim(); } catch (_) {} if (!SECRET) { SECRET = crypto.randomBytes(32).toString('hex'); try { fs.writeFileSync(KEY_FILE, SECRET, { mode: 0o600 }); } catch (_) {} } }
+const hashPass = pw => { const salt = crypto.randomBytes(16).toString('hex'); return 'scrypt$' + salt + '$' + crypto.scryptSync(String(pw), salt, 64).toString('hex'); };
 
 const API = process.env.MF_API_URL || 'https://api.myfatoorah.com';
 const KEY = process.env.MF_API_KEY || '';
@@ -56,7 +61,7 @@ const paidSeen = new Set(readLog('payments.jsonl').map(p => String(p.invoiceId))
 const sign = v => crypto.createHmac('sha256', SECRET).update(v).digest('hex');
 const makeSession = () => { const exp = Date.now() + 7 * 864e5, v = 'admin.' + exp; return v + '.' + sign(v); };
 const isAdmin = req => { const m = /(?:^|;\s*)mb_admin=([^;]+)/.exec(req.headers.cookie || ''); if (!m) return false; const parts = decodeURIComponent(m[1]).split('.'); if (parts.length !== 3) return false; const v = parts[0] + '.' + parts[1], sig = sign(v); return +parts[1] > Date.now() && sig.length === parts[2].length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(parts[2])); };
-const checkPass = pw => { const [alg, salt, hash] = ADMIN_HASH.split('$'); if (alg !== 'scrypt' || !salt || !hash) return false; const h = crypto.scryptSync(String(pw), salt, 64).toString('hex'); return crypto.timingSafeEqual(Buffer.from(h), Buffer.from(hash)); };
+const checkPass = pw => { const a = readAdmin(); if (!a) return false; const [alg, salt, hash] = String(a.hash || '').split('$'); if (alg !== 'scrypt' || !salt || !hash) return false; const h = crypto.scryptSync(String(pw), salt, 64).toString('hex'); return crypto.timingSafeEqual(Buffer.from(h), Buffer.from(hash)); };
 const loginTries = new Map();
 const ORIGINS = new Set([SITE, 'https://www.myboutki.com']);
 const PRODUCTS = new Proxy({}, { get: (_, k) => products()[k], ownKeys: () => Object.keys(products()), getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }) });
@@ -169,15 +174,36 @@ http.createServer(async (req, res) => {
       const ip = req.headers['x-real-ip'] || req.socket.remoteAddress, now = Date.now(), a = (loginTries.get(ip) || []).filter(t => now - t < 9e5);
       if (a.length >= 8) return json(res, 429, { error: 'Too many attempts. Wait 15 minutes.' });
       const b = await readBody(req);
-      if (!ADMIN_USER || String(b.user || '').trim().toLowerCase() !== ADMIN_USER.toLowerCase() || !checkPass(b.pass || '')) { a.push(now); loginTries.set(ip, a); return json(res, 401, { error: 'Wrong username or password' }); }
+      const adm = readAdmin();
+      if (!adm || String(b.user || '').trim().toLowerCase() !== String(adm.user).toLowerCase() || !checkPass(b.pass || '')) { a.push(now); loginTries.set(ip, a); return json(res, 401, { error: 'Wrong username or password' }); }
+      res.setHeader('Set-Cookie', `mb_admin=${encodeURIComponent(makeSession())}; Path=/; Max-Age=${7 * 86400}; HttpOnly; Secure; SameSite=Strict`);
+      return json(res, 200, { ok: true });
+    }
+    if (url.pathname === '/api/admin/status') return json(res, 200, { setup: !readAdmin() });
+    if (url.pathname === '/api/admin/setup' && req.method === 'POST') {
+      if (readAdmin()) return json(res, 403, { error: 'Admin login already created' });
+      const ip = req.headers['x-real-ip'] || req.socket.remoteAddress, now = Date.now(), a = (loginTries.get(ip) || []).filter(t => now - t < 9e5);
+      if (a.length >= 8) return json(res, 429, { error: 'Too many attempts. Wait 15 minutes.' });
+      const b = await readBody(req), code = crypto.createHash('sha256').update(String(b.code || '').trim()).digest('hex');
+      if (!SETUP_SHA || code.length !== SETUP_SHA.length || !crypto.timingSafeEqual(Buffer.from(code), Buffer.from(SETUP_SHA))) { a.push(now); loginTries.set(ip, a); return json(res, 401, { error: 'Wrong setup code' }); }
+      const user = String(b.user || '').trim().toLowerCase();
+      if (!/^[a-z0-9._@-]{3,40}$/.test(user)) return json(res, 400, { error: 'Username: 3 to 40 letters or numbers' });
+      const pass = String(b.pass || '');
+      if (pass.length < 10 || !/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass)) return json(res, 400, { error: 'Password: at least 10 characters with letters and numbers' });
+      fs.writeFileSync(ADMIN_FILE, JSON.stringify({ user, hash: hashPass(pass), created: Date.now() }), { mode: 0o600 });
       res.setHeader('Set-Cookie', `mb_admin=${encodeURIComponent(makeSession())}; Path=/; Max-Age=${7 * 86400}; HttpOnly; Secure; SameSite=Strict`);
       return json(res, 200, { ok: true });
     }
     if (url.pathname === '/api/admin/logout') { res.setHeader('Set-Cookie', 'mb_admin=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict'); return json(res, 200, { ok: true }); }
     if (url.pathname.startsWith('/api/admin/')) {
       if (!isAdmin(req)) return json(res, 401, { error: 'Please sign in' });
-      if (url.pathname === '/api/admin/me') return json(res, 200, { user: ADMIN_USER });
+      if (url.pathname === '/api/admin/me') return json(res, 200, { user: (readAdmin() || {}).user });
       if (url.pathname === '/api/admin/config' && req.method === 'POST') { try { setConfig(await readBody(req)); return json(res, 200, CONFIG); } catch (e) { return json(res, 400, { error: e.message }); } }
+      if (url.pathname === '/api/admin/password' && req.method === 'POST') {
+        const b = await readBody(req); if (!checkPass(b.old || '')) return json(res, 401, { error: 'Current password is wrong' });
+        const pass = String(b.pass || ''); if (pass.length < 10 || !/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass)) return json(res, 400, { error: 'Password: at least 10 characters with letters and numbers' });
+        const adm = readAdmin(); fs.writeFileSync(ADMIN_FILE, JSON.stringify({ ...adm, hash: hashPass(pass), changed: Date.now() }), { mode: 0o600 }); return json(res, 200, { ok: true });
+      }
       if (url.pathname === '/api/admin/payments') return json(res, 200, readLog('payments.jsonl').reverse().slice(0, 500));
       if (url.pathname === '/api/admin/stats') {
         const days = Math.min(90, Math.max(1, +url.searchParams.get('days') || 30)), since = Date.now() - days * 864e5, ev = readLog('events.jsonl', since);

@@ -123,25 +123,25 @@ print('ok',len(s))
 
 # 6. REAL Google sign-in with Firebase Auth (website only)
 R("case 'google':S.stage='pick';render();break;","case 'google':fbGoogle(el);break;")
-R("case 'logout':S.menu=false;S.user=null;","case 'logout':fbOut();S.menu=false;S.user=null;")
-R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:"myboutki.firebaseapp.com",projectId:"myboutki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
+R("case 'logout':S.menu=false;","case 'logout':fbOut();S.menu=false;")
+R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutki\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
 const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
 function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
-if(REG[em]){S.user=REG[em];S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
+const mine=storesOf(em);if(mine.length){S.user=mine[0];markSigned(S.user);S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
 else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=0;S.stage='setup';render()}}
-async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.disabled=true}
+async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.style.pointerEvents='none';el.style.opacity='.75';el.textContent=tr('Opening Google…')}
 try{const {U,auth}=await fbLoad(),pv=new U.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
-let r;try{r=await U.signInWithPopup(auth,pv)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||'')){await U.signInWithRedirect(auth,pv);return}throw e}
-fbAccount(r.user)}catch(e){if(!/popup-closed|cancelled-popup/.test(e&&e.code||''))toast("Couldn't sign in with Google. Please try again.")}finally{if(el&&el.isConnected){el.disabled=false;el.innerHTML=t}}}
+if(innerWidth<900||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){saveNow();await U.signInWithRedirect(auth,pv);return}let r;try{r=await U.signInWithPopup(auth,pv)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||'')){await U.signInWithRedirect(auth,pv);return}throw e}
+fbAccount(r.user)}catch(e){if(!/popup-closed|cancelled-popup/.test(e&&e.code||''))toast("Couldn't sign in with Google. Please try again.")}finally{if(el&&el.isConnected){el.style.pointerEvents='';el.style.opacity='';el.innerHTML=t}}}
 function fbOut(){fbLoad().then(({U,auth})=>U.signOut(auth)).catch(()=>{})}
 async function fbRedirectResult(){if(S.user)return;try{const {U,auth}=await fbLoad(),r=await U.getRedirectResult(auth);if(r&&r.user)fbAccount(r.user)}catch(_){}}
 async function boot(){""")
-R("applyLang();render();payReturn();","applyLang();render();payReturn();if(sessionStorage.getItem('mb_fbr')!=='0')fbRedirectResult();")
+R("applyLang();render();payReturn();","applyLang();render();payReturn();fbRedirectResult();(window.requestIdleCallback||setTimeout)(()=>fbLoad().catch(()=>{}),{timeout:1500});")
 # finish: remember the Google uid on the account
 R("case 'finish':{","case 'finish':{if(S.pending&&S.pending.uid)S.pendingUid=S.pending.uid;")
 m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
-d.update({"Couldn't sign in with Google. Please try again.":"تعذّر تسجيل الدخول عبر Google. حاول مرة أخرى."})
+d.update({"Couldn't sign in with Google. Please try again.":"تعذّر تسجيل الدخول عبر Google. حاول مرة أخرى.","Opening Google…":"جارٍ فتح Google…"})
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
 
 # ---- write pages into the Astro public folder with SEO heads
@@ -171,7 +171,7 @@ def head(lang):
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/favicon.png">
-<link rel="manifest" href="/manifest.webmanifest">
+<link rel="manifest" href="/manifest.webmanifest">\n<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"><link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
 <noscript><style>.stage{{display:none}}</style><p style="padding:24px;font:16px system-ui">{'ماي بوتيكي يحتاج إلى تفعيل JavaScript.' if ar else 'myboutki needs JavaScript turned on.'} <a href="{'/ar/about/' if ar else '/about/'}">{'عن ماي بوتيكي' if ar else 'About myboutki'}</a></p></noscript>'''
 for lang,out in [('en','index.html'),('ar','ar/index.html')]:

@@ -40,17 +40,21 @@ const CN={KW:'Kuwait',SA:'Saudi Arabia',AE:'UAE',BH:'Bahrain',QA:'Qatar',OM:'Oma
 const CLICK={wa:'WhatsApp order',add:'Add to cart',share:'Share',like:'Like',save:'Save',follow:'Follow',msgseller:'Message seller',call:'Call',boost:'Boost post',paynow:'Pay for Verified',boostpay:'Pay for boost',google:'Continue with Google',detail:'Open item',seller:'Open shop',comments:'Comments',emailsheet:'Email shop',store:'App store badge'};
 let tab='overview',days=30;
 
+function showSetup(msg){$('#root').innerHTML=`<div class="login"><img src="/img/mark.svg" alt="" style="height:54px"><h1 style="font-family:Georgia,serif;font-weight:600;margin:8px 0 6px">Create your admin login</h1><p class="muted" style="margin:0 0 18px">Only you can do this, once, with the setup code.</p>
+<form class="card" id="sf"><label for="c">Setup code</label><input id="c" autocomplete="one-time-code" required><label for="u">Choose a username</label><input id="u" autocomplete="username" required minlength="3"><label for="p">Choose a password</label><input id="p" type="password" autocomplete="new-password" required minlength="10"><p class="muted" style="font-size:12px;margin:6px 0 0">At least 10 characters, with letters and numbers.</p><label for="p2">Type the password again</label><input id="p2" type="password" autocomplete="new-password" required>
+<div class="err" id="se">${esc(msg||'')}</div><button class="btn" style="width:100%">Create admin login</button></form></div>`;
+$('#sf').onsubmit=async e=>{e.preventDefault();$('#se').textContent='';if($('#p').value!==$('#p2').value){$('#se').textContent='The passwords do not match';return}try{await api('/api/admin/setup',{method:'POST',body:JSON.stringify({code:$('#c').value,user:$('#u').value,pass:$('#p').value})});main()}catch(err){$('#se').textContent=err.message}}}
 function showLogin(msg){$('#root').innerHTML=`<div class="login"><img src="/img/mark.svg" alt="" style="height:54px"><h1 style="font-family:Georgia,serif;font-weight:600;margin:8px 0 18px">myboutki admin</h1>
 <form class="card" id="lf"><label for="u">Username</label><input id="u" autocomplete="username" required><label for="p">Password</label><input id="p" type="password" autocomplete="current-password" required>
 <div class="err" id="le">${esc(msg||'')}</div><button class="btn" style="width:100%">Sign in</button></form></div>`;
 $('#lf').onsubmit=async e=>{e.preventDefault();$('#le').textContent='';try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({user:$('#u').value,pass:$('#p').value})});main()}catch(err){$('#le').textContent=err.message}}}
 
-async function main(){try{await api('/api/admin/me')}catch(_){return}
+async function main(){try{const st=await (await fetch('/api/admin/status')).json();if(st.setup)return showSetup()}catch(_){}try{await api('/api/admin/me')}catch(_){return}
 $('#root').innerHTML=`<div class="wrap"><div class="top"><img src="/img/mark.svg" alt=""><b>myboutki</b><span class="muted">admin</span><span class="sp"></span><a href="/" class="muted" style="margin-right:12px">Open website</a><button class="btn sec" id="out">Sign out</button></div>
-<div class="tabs">${[['overview','Overview'],['analytics','What people like'],['payments','Payments'],['prices','Prices & settings']].map(([k,l])=>`<button data-t="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div><div id="v"></div></div>`;
+<div class="tabs">${[['overview','Overview'],['analytics','What people like'],['payments','Payments'],['prices','Prices & settings'],['account','Account']].map(([k,l])=>`<button data-t="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div><div id="v"></div></div>`;
 $('#out').onclick=async()=>{await fetch('/api/admin/logout');showLogin()};
 document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;main()});
-if(tab==='prices')return prices();if(tab==='payments')return payments();return stats()}
+if(tab==='prices')return prices();if(tab==='account')return account();if(tab==='payments')return payments();return stats()}
 
 const table=(title,rows,label,map)=>{const max=Math.max(1,...rows.map(r=>r[1]));return `<div class="card"><h2>${title}</h2>${rows.length?`<table>${rows.map(([k,n])=>`<tr><td style="width:55%">${esc(map?map(k):k)}</td><td style="width:30%"><div class="bar" style="width:${Math.max(4,n/max*100)}%"></div></td><td class="n">${fmt(n)}</td></tr>`).join('')}</table>`:`<p class="muted" style="margin:0">No ${label} yet.</p>`}</div>`};
 
@@ -77,6 +81,8 @@ v.innerHTML=`<form class="card" id="pf" style="max-width:760px"><h2>Verified bad
 $('#pf').onsubmit=async e=>{e.preventDefault();const n=id=>+$('#'+id).value;$('#pm').textContent='Saving…';$('#pm').className='muted';
 try{await api('/api/admin/config',{method:'POST',body:JSON.stringify({verified:{monthlyUsd:n('mu'),monthlyKwd:n('mk'),yearlyUsd:n('yu'),yearlyKwd:n('yk')},boost:{minDaily:n('bmin'),maxDaily:n('bmax'),usdToKwd:n('brate'),days:$('#bdays').value.split(/[^0-9]+/).filter(Boolean).map(Number)}})});$('#pm').textContent='Saved. Live on the website and app now.';$('#pm').className='ok'}catch(err){if(err.message!=='signin'){$('#pm').textContent=err.message;$('#pm').className='err'}}}}
 
+function account(){const v=$('#v');v.innerHTML=`<form class="card" id="af" style="max-width:420px"><h2>Change password</h2><label for="o">Current password</label><input id="o" type="password" autocomplete="current-password" required><label for="n">New password</label><input id="n" type="password" autocomplete="new-password" required minlength="10"><label for="n2">Type it again</label><input id="n2" type="password" autocomplete="new-password" required><div class="err" id="ae"></div><button class="btn">Save new password</button></form>`;
+$('#af').onsubmit=async e=>{e.preventDefault();const m=$('#ae');m.className='err';if($('#n').value!==$('#n2').value){m.textContent='The passwords do not match';return}try{await api('/api/admin/password',{method:'POST',body:JSON.stringify({old:$('#o').value,pass:$('#n').value})});m.className='ok';m.textContent='Password changed.';e.target.reset()}catch(err){if(err.message!=='signin')m.textContent=err.message}}}
 main();
 </script>
 </body>
