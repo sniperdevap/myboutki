@@ -9,6 +9,8 @@ on:
 jobs:
   android:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -29,6 +31,14 @@ jobs:
           cd app
           flutter build apk --release --build-number=${{ github.run_number }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
           flutter build appbundle --release --build-number=${{ github.run_number }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
+      - name: Keep signed app bundle on the release-builds branch
+        env:
+          HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_B64 != '' }}
+        if: env.HAS_KEY == 'true'
+        run: |
+          mkdir -p /tmp/rel && cp app/build/app/outputs/bundle/release/app-release.aab /tmp/rel/myboutiki-${{ github.run_number }}.aab
+          cd /tmp/rel && git init -q && git checkout -q -b release-builds && git add . && git -c user.name=ci -c user.email=ci@myboutiki.com commit -qm "Android build ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" release-builds
       - uses: actions/upload-artifact@v4
         with:
           name: myboutki-android
