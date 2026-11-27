@@ -6,7 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
 
-module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES = [] }) {
+module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = [] }) {
   const IMG = path.join(DATA, 'img'), PRIV = path.join(DATA, 'private');
   for (const d of [IMG, PRIV]) fs.mkdirSync(d, { recursive: true });
   try { fs.chmodSync(DATA, 0o711); fs.chmodSync(IMG, 0o755); fs.chmodSync(PRIV, 0o700); } catch (_) {}
@@ -46,7 +46,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
     const k = (await keys())[head.kid]; if (!k) return null;
     if (!crypto.verify('RSA-SHA256', Buffer.from(h + '.' + p), k, b64(sig))) return null;
     const now = Date.now() / 1000;
-    if (pay.aud !== PROJECT || pay.iss !== 'https://securetoken.google.com/' + PROJECT || !pay.sub || pay.exp < now || pay.iat > now + 300) return null;
+    if (pay.aud !== PROJECT || pay.iss !== 'https://securetoken.google.com/' + PROJECT || !pay.sub || pay.exp < now || pay.iat > now + 300) { console.warn('sign-in token rejected:', pay.aud !== PROJECT ? 'wrong project ' + pay.aud : 'expired or invalid'); return null; }
     return { uid: pay.sub, email: (pay.email || '').toLowerCase(), name: pay.name || '' };
   }
 

@@ -125,7 +125,7 @@ print('ok',len(s))
 # 6. REAL Google sign-in with Firebase Auth (website only)
 R("case 'google':S.stage='pick';render();break;","case 'google':fbGoogle(el);break;")
 R("case 'logout':S.menu=false;","case 'logout':fbOut();S.menu=false;")
-R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutik?i\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutiki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
+R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutik?i\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
 const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
 function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
@@ -175,10 +175,11 @@ P.sort((a,b)=>b.at-a.at);fwInit();msgPull();return j}
 const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur,r.calls!==false]);
 const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp,x.cur,x.po]);
 function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
+setInterval(()=>{if(SYNC.uid&&document.visibilityState==='visible'&&!SYNC.busy)syncPush()},20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')queueSync()});
 async function syncPush(){if(SYNC.busy||!SYNC.uid){return}SYNC.busy=true;try{
 const mine=Object.values(REG).filter(r=>r.email===SYNC.email&&r.handle);
 for(const r of mine){if(r.syncErr===r.handle)continue;
- if(!r.srvOk){try{await api('POST','/api/stores',{handle:r.handle,name:r.name,phone:r.phone,k:r.k,cur:r.cur,bio:r.bio||''});r.srvOk=1;r.uid=SYNC.uid;r.srvHandle=r.handle;r._sh=''}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Change your username in Edit profile.')}continue}}
+ if(!r.srvOk){try{await api('POST','/api/stores',{handle:r.handle,name:r.name,phone:r.phone,k:r.k,cur:r.cur,bio:r.bio||''});r.srvOk=1;r.uid=SYNC.uid;r.srvHandle=r.handle;r._sh=''}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Change your username in Edit profile.')}else console.warn('store save failed, will retry',e&&e.code,e&&e.message);continue}}
  if(storeSig(r)!==r._sh){try{const av=r.avatar?await upImg(r.avatar):null;const hl=[];for(const x of r.hl||[])hl.push({...x,cover:x.cover?await upImg(x.cover):null});
   const old=r.srvHandle||r.handle;const j=await api('PUT','/api/stores/'+encodeURIComponent(old),{handle:r.handle,name:r.name,bio:r.bio,avatar:av,links:r.links||[],hl,k:r.k,phone:r.phone,cur:r.cur,calls:r.calls!==false});r.srvHandle=j.store.handle;r._sh=storeSig(r)}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Choose another username.')}}}}
 const hs=new Set(mine.filter(r=>r.srvOk).map(r=>r.handle));
