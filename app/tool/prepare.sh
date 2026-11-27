@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Creates the Android/iOS project folders and applies myboutki settings.
+# Creates the Android/iOS project folders and applies myboutiki settings.
 # Run from anywhere: bash app/tool/prepare.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -14,7 +14,7 @@ G=android/app/build.gradle.kts; [ -f "$G" ] || G=android/app/build.gradle
 sed -i.bak -E 's/applicationId *=? *"[^"]+"/applicationId = "com.myboutki.app"/' "$G"
 sed -i.bak -E 's/minSdk *=? *flutter\.minSdkVersion/minSdk = 23/' "$G"
 M=android/app/src/main/AndroidManifest.xml
-sed -i.bak -E 's/android:label="[^"]*"/android:label="myboutki"/' "$M"
+sed -i.bak -E 's/android:label="[^"]*"/android:label="myboutiki"/' "$M"
 grep -q 'android.permission.INTERNET' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$M"
 
 # Release signing with the Play upload key (only when the key is provided as CI secrets)
@@ -54,9 +54,9 @@ PL=ios/Runner/Info.plist
 python3 - "$PL" <<'PY'
 import sys,plistlib
 p=sys.argv[1];d=plistlib.load(open(p,'rb'))
-d['CFBundleDisplayName']='myboutki'; d['CFBundleName']='myboutki'
-d['NSPhotoLibraryUsageDescription']='myboutki uses your photos so you can add pictures of the items you sell.'
-d['NSCameraUsageDescription']='myboutki uses the camera so you can take photos of the items you sell.'
+d['CFBundleDisplayName']='myboutiki'; d['CFBundleName']='myboutiki'
+d['NSPhotoLibraryUsageDescription']='myboutiki uses your photos so you can add pictures of the items you sell.'
+d['NSCameraUsageDescription']='myboutiki uses the camera so you can take photos of the items you sell.'
 d['LSApplicationQueriesSchemes']=['whatsapp','tel','mailto','instagram','https']
 d['ITSAppUsesNonExemptEncryption']=False
 d['CFBundleLocalizations']=['en','ar']

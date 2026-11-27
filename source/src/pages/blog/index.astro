@@ -2,10 +2,10 @@
 import Blog from '../../layouts/Blog.astro';
 import { posts } from '../../blog/posts.js';
 const SITE = 'https://myboutki.com';
-const jsonld = [{ '@context': 'https://schema.org', '@type': 'Blog', name: 'myboutki blog', url: SITE + '/blog/', inLanguage: 'en',
+const jsonld = [{ '@context': 'https://schema.org', '@type': 'Blog', name: 'myboutiki blog', url: SITE + '/blog/', inLanguage: 'en',
   blogPost: posts.map(p => ({ '@type': 'BlogPosting', headline: p.en.title, url: `${SITE}/blog/${p.slug}/`, datePublished: p.date, image: SITE + p.img })) }];
 ---
-<Blog title="myboutki blog — sell online in Kuwait and the Gulf without renting a shop" description="Guides for sellers in Kuwait and the Gulf: booth and shop rent costs, selling from home, the 2026 rules for online sellers, and how to grow sales without paying rent." path="/blog/" jsonld={jsonld}>
+<Blog title="myboutiki blog — sell online in Kuwait and the Gulf without renting a shop" description="Guides for sellers in Kuwait and the Gulf: booth and shop rent costs, selling from home, the 2026 rules for online sellers, and how to grow sales without paying rent." path="/blog/" jsonld={jsonld}>
   <p class="tag">Blog</p>
   <h1>Sell more, spend less on rent</h1>
   <p class="meta">Guides for shops and home sellers in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.</p>

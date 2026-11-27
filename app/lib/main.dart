@@ -1,4 +1,4 @@
-// myboutki app — shows the live myboutki.com app, so the website and the
+// myboutiki app — shows the live myboutki.com app, so the website and the
 // phone apps are always the same and every update appears everywhere at once.
 // Native parts: splash, icon, back button, photo picker, sharing, WhatsApp /
 // phone / email links, offline screen, and native Google / Apple sign-in
@@ -28,7 +28,7 @@ const List<String> kInside = [
   'demo.myfatoorah.com',
   'myboutki.firebaseapp.com',
 ];
-// Google web client of the myboutki Firebase project (set at build time).
+// Google web client of the myboutiki Firebase project (set at build time).
 const String kGoogleServerClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
 void main() {
@@ -41,7 +41,7 @@ class MyBoutkiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'myboutki',
+      title: 'myboutiki',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFFDD2A7B), brightness: Brightness.light),
       darkTheme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFFDD2A7B), brightness: Brightness.dark),

@@ -1,11 +1,11 @@
 ---
 const {
-  title = 'myboutki — Sell online without renting a shop | Social marketplace for the Gulf',
-  description = 'myboutki is a social media marketplace for the Gulf. Open your own online shop in minutes instead of paying rent for a store, post items with photos, and let buyers find, save and order on WhatsApp. Coming soon to Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman.',
+  title = 'myboutiki — Sell online without renting a shop | Social marketplace for the Gulf',
+  description = 'myboutiki is a social media marketplace for the Gulf. Open your own online shop in minutes instead of paying rent for a store, post items with photos, and let buyers find, save and order on WhatsApp. Coming soon to Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman.',
   path = '/',
   jsonld = [],
   lang = 'en',
-  image = 'https://myboutki.com/img/og.jpg?v=3',
+  image = 'https://myboutki.com/img/og.jpg?v=4',
   ogType = 'website',
 } = Astro.props;
 const url = new URL(path, 'https://myboutki.com').href;
@@ -25,17 +25,17 @@ const arUrl = new URL('/ar' + enPath, 'https://myboutki.com').href;
 <link rel="alternate" hreflang="en" href={enUrl} />
 <link rel="alternate" hreflang="ar" href={arUrl} />
 <link rel="alternate" hreflang="x-default" href={enUrl} />
-<meta name="application-name" content="myboutki" />
-<meta name="apple-mobile-web-app-title" content="myboutki" />
+<meta name="application-name" content="myboutiki" />
+<meta name="apple-mobile-web-app-title" content="myboutiki" />
 <meta property="og:type" content={ogType} />
-<meta property="og:site_name" content="myboutki" />
+<meta property="og:site_name" content="myboutiki" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={url} />
 <meta property="og:image" content={image} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="myboutki — shop and sell with your community" />
+<meta property="og:image:alt" content="myboutiki — shop and sell with your community" />
 <meta property="og:locale" content={lang === 'ar' ? 'ar_KW' : 'en_US'} />
 <meta property="og:locale:alternate" content={lang === 'ar' ? 'en_US' : 'ar_KW'} />
 <meta name="twitter:card" content="summary_large_image" />

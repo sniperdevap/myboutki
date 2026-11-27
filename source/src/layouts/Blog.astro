@@ -6,16 +6,16 @@ const home = ar ? '/ar/' : '/';
 ---
 <Base lang={lang} title={title} description={description} path={path} jsonld={jsonld} image={image} ogType={ogType}>
 <header class="bt">
-  <a href={home} class="brand" aria-label="myboutki" dir="ltr"><img src="/img/mark.svg?v=2" alt="" width="54" height="35" /><span>myboutki</span></a>
+  <a href={home} class="brand" aria-label="myboutiki" dir="ltr"><img src="/img/mark.svg?v=2" alt="" width="54" height="35" /><span>myboutiki</span></a>
   <nav>
     <a href={ar ? '/ar/blog/' : '/blog/'}>{ar ? 'المدونة' : 'Blog'}</a>
     <a href={ar ? '/ar/about/' : '/about/'}>{ar ? 'عن ماي بوتيكي' : 'About'}</a>
     <a href={ar ? path.replace(/^\/ar/, '') : '/ar' + path} lang={ar ? 'en' : 'ar'} hreflang={ar ? 'en' : 'ar'} class="lang">{ar ? 'English' : 'العربية'}</a>
-    <a href={home} class="go">{ar ? 'افتح ماي بوتيكي' : 'Open myboutki'}</a>
+    <a href={home} class="go">{ar ? 'افتح ماي بوتيكي' : 'Open myboutiki'}</a>
   </nav>
 </header>
 <main class="bw"><slot /></main>
-<footer class="bf"><p>© {new Date().getFullYear()} myboutki · {ar ? 'الكويت · السعودية · الإمارات · البحرين · قطر · عُمان' : 'Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman'}</p><p><a href={home}>{ar ? 'المتجر' : 'Shop'}</a> · <a href={ar ? '/ar/blog/' : '/blog/'}>{ar ? 'المدونة' : 'Blog'}</a> · <a href="mailto:support@myboutki.com">{ar ? 'الدعم' : 'Support'}</a></p></footer>
+<footer class="bf"><p>© {new Date().getFullYear()} myboutiki · {ar ? 'الكويت · السعودية · الإمارات · البحرين · قطر · عُمان' : 'Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman'}</p><p><a href={home}>{ar ? 'المتجر' : 'Shop'}</a> · <a href={ar ? '/ar/blog/' : '/blog/'}>{ar ? 'المدونة' : 'Blog'}</a> · <a href="mailto:support@myboutki.com">{ar ? 'الدعم' : 'Support'}</a></p></footer>
 <style is:global>
 :root{--ink:#111;--muted:#6f6f6f;--gold:#b8913e;--soft:#f8f6f1;--line:#ece8df;--blue:#4A5DF9}
 *{box-sizing:border-box}html,body{margin:0}

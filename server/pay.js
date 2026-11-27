@@ -1,4 +1,4 @@
-// myboutki payment service (MyFatoorah v3). No dependencies; Node 18+.
+// myboutiki payment service (MyFatoorah v3). No dependencies; Node 18+.
 // The secret key comes ONLY from the MF_API_KEY environment variable. Never commit it.
 'use strict';
 const http = require('http');
@@ -54,8 +54,8 @@ function setConfig(c) {
   CONFIG = next; fs.writeFileSync(CFG_FILE, JSON.stringify(CONFIG, null, 2));
 }
 const products = () => ({
-  'verified-monthly': { name: 'myboutki Verified · Monthly', usd: CONFIG.verified.monthlyUsd, kwd: CONFIG.verified.monthlyKwd, days: 30 },
-  'verified-yearly': { name: 'myboutki Verified · Yearly', usd: CONFIG.verified.yearlyUsd, kwd: CONFIG.verified.yearlyKwd, days: 365 },
+  'verified-monthly': { name: 'myboutiki Verified · Monthly', usd: CONFIG.verified.monthlyUsd, kwd: CONFIG.verified.monthlyKwd, days: 30 },
+  'verified-yearly': { name: 'myboutiki Verified · Yearly', usd: CONFIG.verified.yearlyUsd, kwd: CONFIG.verified.yearlyKwd, days: 365 },
 });
 
 // Boosts: price = daily budget (USD) x days, worked out here. Only the app's 6 Gulf countries can be targeted.
@@ -305,4 +305,4 @@ http.createServer(async (req, res) => {
     console.error('error', e && e.message);
     json(res, 500, { error: 'Something went wrong' }, origin);
   }
-}).listen(PORT, () => console.log('myboutki pay service on', PORT, 'key set:', !!KEY));
+}).listen(PORT, () => console.log('myboutiki pay service on', PORT, 'key set:', !!KEY));

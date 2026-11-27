@@ -1,4 +1,4 @@
-// myboutki database: shops (stores), posts and photos. SQLite file in /data, photos in /data/img.
+// myboutiki database: shops (stores), posts and photos. SQLite file in /data, photos in /data/img.
 // Writes need a Firebase Google sign-in token; each shop belongs to the Google account that created it.
 'use strict';
 const fs = require('fs');
@@ -6,12 +6,12 @@ const path = require('path');
 const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
 
-module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = [] }) {
+module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES = [] }) {
   const IMG = path.join(DATA, 'img'), PRIV = path.join(DATA, 'private');
   for (const d of [IMG, PRIV]) fs.mkdirSync(d, { recursive: true });
   try { fs.chmodSync(DATA, 0o711); fs.chmodSync(IMG, 0o755); fs.chmodSync(PRIV, 0o700); } catch (_) {}
 
-  const db = new DatabaseSync(path.join(DATA, 'myboutki.db'));
+  const db = new DatabaseSync(path.join(DATA, 'myboutiki.db'));
   db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=3000;
     CREATE TABLE IF NOT EXISTS stores (handle TEXT PRIMARY KEY, uid TEXT NOT NULL, email TEXT, data TEXT NOT NULL, created INTEGER, updated INTEGER, banned INTEGER DEFAULT 0);
     CREATE INDEX IF NOT EXISTS stores_uid ON stores(uid);
@@ -22,6 +22,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
     CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, f TEXT NOT NULL, t TEXT NOT NULL, text TEXT NOT NULL, pid TEXT, at INTEGER NOT NULL, hid_f INTEGER DEFAULT 0, hid_t INTEGER DEFAULT 0);
     CREATE INDEX IF NOT EXISTS messages_f ON messages(f, at); CREATE INDEX IF NOT EXISTS messages_t ON messages(t, at);`);
   const q = sql => db.prepare(sql);
+  const LOGIN_HITS = new Map(), FB_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo';
   const J = s => { try { return JSON.parse(s); } catch (_) { return {}; } };
 
   // ---------- Firebase ID token check (RS256, Google public keys) ----------
@@ -54,7 +55,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
   const postOut = r => ({ ...J(r.data), id: isNaN(+r.id) ? r.id : +r.id, s: r.handle, at: r.at, synced: 1 });
   const ownerOf = h => q('SELECT uid FROM stores WHERE handle=? AND banned=0').get(h);
-  const reserved = h => SAMPLE_HANDLES.includes(h) || /^(admin|myboutki|support|help|api|www|root)$/.test(h);
+  const reserved = h => SAMPLE_HANDLES.includes(h) || /^(admin|myboutiki|myboutki|support|help|api|www|root)$/.test(h);
 
   function sanitizeStore(b, d = {}) {
     const links = (Array.isArray(b.links) ? b.links : d.links || []).slice(0, 4).map(l => ({ u: /^https?:\/\//.test(l.u || '') ? clean(l.u, 300) : '', t: clean(l.t, 30) })).filter(l => l.u);
@@ -104,6 +105,31 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(h)) }, origin), true;
     }
     let m;
+    // ---------- log in with username or phone + password ----------
+    // Finds the account's email, checks the password with Firebase, and only then returns the email
+    // so the app can finish signing in. Wrong details always get the same answer.
+    if (p === '/api/login-id' && req.method === 'POST') {
+      const ip = req.headers['x-real-ip'] || req.socket.remoteAddress || '';
+      const now = Date.now(), hits = (LOGIN_HITS.get(ip) || []).filter(t => now - t < 15 * 60e3);
+      if (hits.length >= 20) return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }, origin), true;
+      hits.push(now); LOGIN_HITS.set(ip, hits);
+      const b = await readBody(req), id = String(b.id || '').trim().toLowerCase().replace(/^@/, ''), pw = String(b.pw || '');
+      if (!id || !pw) return json(res, 400, { error: 'Enter your login and password' }, origin), true;
+      let email = id.includes('@') ? id : null;
+      if (!email) {
+        let r = HANDLE.test(id) ? q('SELECT email FROM stores WHERE handle=? AND banned=0').get(id) : null;
+        const dg = id.replace(/\D/g, '');
+        if (!r && dg.length >= 7) r = q('SELECT email, data FROM stores WHERE banned=0').all().find(x => { const ph = String(J(x.data).phone || '').replace(/\D/g, ''); return ph && (ph === dg || ph.endsWith(dg) || dg.endsWith(ph.slice(-8))); });
+        email = r && r.email;
+      }
+      const bad = () => json(res, 401, { error: 'Wrong login or password' }, origin);
+      if (!email) return bad(), true;
+      try {
+        const v = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB_KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pw, returnSecureToken: false }), signal: AbortSignal.timeout(10000) });
+        if (!v.ok) return bad(), true;
+      } catch (_) { return json(res, 502, { error: 'Please try again' }, origin), true; }
+      return json(res, 200, { email }, origin), true;
+    }
     // ---------- direct messages between shops ----------
     const mine = async h => { const u = await auth(); if (!u) return null; return q('SELECT 1 FROM stores WHERE handle=? AND uid=? AND banned=0').get(String(h || '').toLowerCase(), u.uid) ? u : null; };
     if (p === '/api/messages' && req.method === 'GET') {
@@ -212,14 +238,14 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       let title, desc, img, link, ld;
       if (m[2]) { const r = q('SELECT p.*, s.data sd FROM posts p JOIN stores s ON s.handle=p.handle WHERE p.id=? AND p.deleted=0 AND s.banned=0').get(m[2]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; }
         const d = J(r.data), sd = J(r.sd), dec = { KWD: 3, BHD: 3, OMR: 3 }[d.cur] ?? 2, price = d.cur && d.po != null ? d.cur + ' ' + (+d.po).toFixed(d.cur ? dec : 3) : 'KWD ' + (+d.p || 0).toFixed(3), noPrice = !(+d.p > 0) && !(+d.po > 0);
-        title = `${d.h}${noPrice ? '' : ' – ' + price} | ${sd.name || r.handle} on myboutki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutki.com/p/${r.id}`;
+        title = `${d.h}${noPrice ? '' : ' – ' + price} | ${sd.name || r.handle} on myboutiki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutki.com/p/${r.id}`;
         ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.h, description: d.d, image: (d.imgs || []).map(u => 'https://myboutki.com' + u), category: d.c, offers: noPrice ? undefined : { '@type': 'Offer', url: link, price: d.cur && d.po != null ? (+d.po).toFixed(dec) : (+d.p || 0).toFixed(3), priceCurrency: d.cur && d.po != null ? d.cur : 'KWD', availability: d.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } };
       } else { const r = q('SELECT * FROM stores WHERE handle=? AND banned=0').get(m[3]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; } const d = J(r.data);
         const first = q('SELECT data FROM posts WHERE handle=? AND deleted=0 ORDER BY at DESC LIMIT 1').get(r.handle);
-        title = `${d.name} (@${r.handle}) on myboutki`; desc = (d.bio || `Shop ${d.name} on myboutki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutki.com/@${r.handle}`;
+        title = `${d.name} (@${r.handle}) on myboutiki`; desc = (d.bio || `Shop ${d.name} on myboutiki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutki.com/@${r.handle}`;
         ld = { '@context': 'https://schema.org', '@type': 'Store', name: d.name, url: link };
       }
-      const abs = img ? 'https://myboutki.com' + img : 'https://myboutki.com/img/og.jpg?v=3';
+      const abs = img ? 'https://myboutki.com' + img : 'https://myboutki.com/img/og.jpg?v=4';
       html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${e(title)}</title>`)
         .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(desc)}">`)
         .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${link}">`)

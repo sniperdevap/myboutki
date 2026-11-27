@@ -3,10 +3,10 @@ import Base from '../../layouts/Base.astro';
 const SITE = 'https://myboutki.com';
 const cats = ['Apparel','Accessories','Watches','Derma Beauty','Bath & Body','Eyewear','Contact Lenses','Footwear','Electronics','Home & Living','Sports','Other'];
 const countries = ['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'];
-const shots = [['/img/abaya.jpg','Black abaya with gold lace trim for sale on myboutki'],['/img/watch.jpg','Steel GMT watch listed by a verified shop'],['/img/polo.jpg','Green knit polo from a Kuwait menswear shop'],['/img/bag.jpg','Burgundy leather shoulder bag for sale']];
+const shots = [['/img/abaya.jpg','Black abaya with gold lace trim for sale on myboutiki'],['/img/watch.jpg','Steel GMT watch listed by a verified shop'],['/img/polo.jpg','Green knit polo from a Kuwait menswear shop'],['/img/bag.jpg','Burgundy leather shoulder bag for sale']];
 const features = [
   ['Your own shop, no rent','Open a shop profile in minutes with your logo, bio, phone and WhatsApp. No store lease, no deposit, no monthly rent.'],
-  ['Post an item in seconds','Add up to 10 photos, a price and a caption. myboutki writes the headline for you and your item goes live instantly.'],
+  ['Post an item in seconds','Add up to 10 photos, a price and a caption. myboutiki writes the headline for you and your item goes live instantly.'],
   ['A feed made for shopping','Buyers scroll new items like a social feed, tap a seller’s circle to see their latest pieces, and double-tap to like.'],
   ['Search by category','Find exactly what you want across Apparel, Watches, Accessories, Derma Beauty, Electronics and more.'],
   ['Order on WhatsApp','Buyers add items to a cart and send the seller one WhatsApp message with every item, price and link.'],
@@ -15,33 +15,33 @@ const features = [
   ['Built for the Gulf','Prices in KWD, SAR, AED, BHD, QAR and OMR, and Gulf phone numbers for every seller.'],
 ];
 const faq = [
-  ['What is myboutki?','myboutki is a social media marketplace designed for sellers. Instead of renting a physical shop, sellers open a free online shop on myboutki, post their items with photos, and sell to buyers who browse, search and order easily.'],
-  ['Do I need to rent a shop to sell on myboutki?','No. myboutki replaces the need to rent a store. Your shop lives on myboutki, so you can sell from home and reach buyers across the Gulf without paying rent.'],
-  ['Is it free to sell on myboutki?','Opening a shop and posting items is free. Sellers who want the blue verified badge and top placement can choose an optional Verified plan.'],
+  ['What is myboutiki?','myboutiki is a social media marketplace designed for sellers. Instead of renting a physical shop, sellers open a free online shop on myboutiki, post their items with photos, and sell to buyers who browse, search and order easily.'],
+  ['Do I need to rent a shop to sell on myboutiki?','No. myboutiki replaces the need to rent a store. Your shop lives on myboutiki, so you can sell from home and reach buyers across the Gulf without paying rent.'],
+  ['Is it free to sell on myboutiki?','Opening a shop and posting items is free. Sellers who want the blue verified badge and top placement can choose an optional Verified plan.'],
   ['How do buyers pay and receive items?','Buyers add items to their cart and tap Order on WhatsApp. The seller receives a message listing every item and arranges payment and delivery directly with the buyer.'],
-  ['Which countries is myboutki available in?','myboutki is launching in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.'],
-  ['What can I sell on myboutki?','Apparel and abayas, accessories, watches, derma beauty, bath and body, eyewear, contact lenses, footwear, electronics, home and living, sports and more.'],
-  ['When does myboutki launch?','myboutki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
+  ['Which countries is myboutiki available in?','myboutiki is launching in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.'],
+  ['What can I sell on myboutiki?','Apparel and abayas, accessories, watches, derma beauty, bath and body, eyewear, contact lenses, footwear, electronics, home and living, sports and more.'],
+  ['When does myboutiki launch?','myboutiki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
 ];
 const jsonld = [
-  { '@context':'https://schema.org','@type':'Organization','name':'myboutki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
-  { '@context':'https://schema.org','@type':'WebSite','name':'myboutki','url':SITE,'inLanguage':['en','ar'],'description':'A social media marketplace for sellers in the Gulf to sell online without renting a shop.'},
-  { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutki','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','description':'Open your own online shop, post items with photos and sell on WhatsApp without paying rent for a store.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':SITE},
+  { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
+  { '@context':'https://schema.org','@type':'WebSite','name':'myboutiki','url':SITE,'inLanguage':['en','ar'],'description':'A social media marketplace for sellers in the Gulf to sell online without renting a shop.'},
+  { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutiki','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','description':'Open your own online shop, post items with photos and sell on WhatsApp without paying rent for a store.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':SITE},
   { '@context':'https://schema.org','@type':'FAQPage','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
 ];
 ---
 <Base path="/about/" jsonld={jsonld}>
-<header class="top"><a href="/" class="brand" aria-label="myboutki home"><img src="/img/mark.svg?v=2" alt="" width="64" height="41" /><span>myboutki</span></a><nav aria-label="Sections"><a href="#why">Why myboutki</a><a href="#how">How it works</a><a href="#faq">FAQ</a><a href="/ar/about/" class="lang" hreflang="ar" lang="ar">العربية</a></nav></header>
+<header class="top"><a href="/" class="brand" aria-label="myboutiki home"><img src="/img/mark.svg?v=2" alt="" width="64" height="41" /><span>myboutiki</span></a><nav aria-label="Sections"><a href="#why">Why myboutiki</a><a href="#how">How it works</a><a href="#faq">FAQ</a><a href="/ar/about/" class="lang" hreflang="ar" lang="ar">العربية</a></nav></header>
 <main>
   <section class="wrap hero-wrap">
     <div class="hero">
       <p class="eyebrow"><span class="dot"></span>Coming soon</p>
       <h1>Sell online without renting a shop</h1>
-      <p class="lead"><strong>myboutki</strong> is a social media marketplace made for sellers. Open your own shop in minutes, post your items with photos, and let buyers across the Gulf find, save and order them on WhatsApp — no store rent, no setup costs.</p>
+      <p class="lead"><strong>myboutiki</strong> is a social media marketplace made for sellers. Open your own shop in minutes, post your items with photos, and let buyers across the Gulf find, save and order them on WhatsApp — no store rent, no setup costs.</p>
       <ul class="cats" aria-label="Categories">{cats.map(c => <li>{c}</li>)}</ul>
       <p class="where">Launching in {countries.join(' · ')}</p>
     </div>
-    <div class="gallery" aria-label="Items on myboutki">
+    <div class="gallery" aria-label="Items on myboutiki">
       {shots.map(([src, alt], i) => <figure class={`g g${i}`}><img src={src} alt={alt} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" /></figure>)}
     </div>
   </section>
@@ -49,10 +49,10 @@ const jsonld = [
   <section id="why" class="band soft">
     <div class="wrap1">
       <h2>Why pay rent for a shop?</h2>
-      <p class="sub">Renting a store means a lease, deposits and monthly bills before you sell a single item. myboutki gives every seller a dedicated place to sell online, built like the social apps people already use every day.</p>
+      <p class="sub">Renting a store means a lease, deposits and monthly bills before you sell a single item. myboutiki gives every seller a dedicated place to sell online, built like the social apps people already use every day.</p>
       <div class="compare">
         <div class="col"><h3>Renting a shop</h3><ul><li>Monthly rent and a long lease</li><li>Deposit, decoration and staff</li><li>Only people walking past can see you</li><li>Fixed opening hours</li></ul></div>
-        <div class="col good"><h3>Selling on myboutki</h3><ul><li>Your own shop profile, no rent</li><li>Post items from your phone in seconds</li><li>Buyers across six Gulf countries can find you</li><li>Open 24 hours, orders straight to WhatsApp</li></ul></div>
+        <div class="col good"><h3>Selling on myboutiki</h3><ul><li>Your own shop profile, no rent</li><li>Post items from your phone in seconds</li><li>Buyers across six Gulf countries can find you</li><li>Open 24 hours, orders straight to WhatsApp</li></ul></div>
       </div>
     </div>
   </section>
@@ -60,7 +60,7 @@ const jsonld = [
   <section class="band">
     <div class="wrap1">
       <h2>A social marketplace for buying and selling</h2>
-      <p class="sub">myboutki is a specific place made for items: every post is something you can buy, every profile is a shop, and every search leads to sellers near you.</p>
+      <p class="sub">myboutiki is a specific place made for items: every post is something you can buy, every profile is a shop, and every search leads to sellers near you.</p>
       <div class="grid">{features.map(([t,d]) => <article class="feat"><h3>{t}</h3><p>{d}</p></article>)}</div>
     </div>
   </section>
@@ -95,7 +95,7 @@ const jsonld = [
     </div>
   </section>
 </main>
-<footer><p>© {new Date().getFullYear()} myboutki — the social marketplace for sellers in the Gulf.</p><p>Need help? <a href="mailto:support@myboutki.com">support@myboutki.com</a></p></footer>
+<footer><p>© {new Date().getFullYear()} myboutiki — the social marketplace for sellers in the Gulf.</p><p>Need help? <a href="mailto:support@myboutki.com">support@myboutki.com</a></p></footer>
 </Base>
 <style is:global>
   :root{color-scheme:light;--ink:#111;--muted:#6f6f6f;--gold:#b8913e;--soft:#f8f6f1;--line:#ece8df}

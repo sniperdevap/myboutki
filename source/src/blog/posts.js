@@ -1,4 +1,4 @@
-// myboutki blog. Each post has the same slug in English and Arabic so hreflang pairs line up.
+// myboutiki blog. Each post has the same slug in English and Arabic so hreflang pairs line up.
 // Figures come from public listings and news published in 2026 (linked in each article).
 
 const SRC = {
@@ -13,7 +13,7 @@ const SRC = {
 };
 const a = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
 const cta = {
-  en: `<div class="cta"><b>Open your shop on myboutki</b><p>Post your items, get orders on WhatsApp, and keep the money you would spend on rent.</p><a class="btn" href="/">Start selling free</a></div>`,
+  en: `<div class="cta"><b>Open your shop on myboutiki</b><p>Post your items, get orders on WhatsApp, and keep the money you would spend on rent.</p><a class="btn" href="/">Start selling free</a></div>`,
   ar: `<div class="cta"><b>افتح متجرك على ماي بوتيكي</b><p>انشر منتجاتك واستقبل الطلبات عبر واتساب، ووفّر المبلغ الذي كنت ستدفعه للإيجار.</p><a class="btn" href="/ar/">ابدأ البيع مجاناً</a></div>`,
 };
 
@@ -42,15 +42,15 @@ export const posts = [
 <li><b>Limited reach:</b> a shop only sells to people who walk past it.</li>
 </ul>
 <h2>A quick comparison</h2>
-<table><tr><th></th><th>Small shop</th><th>myboutki shop</th></tr>
+<table><tr><th></th><th>Small shop</th><th>myboutiki shop</th></tr>
 <tr><td>Monthly rent</td><td>KWD 500 to 1,300+</td><td>KWD 0</td></tr>
 <tr><td>Deposit and commission</td><td>Often 1 to 2 months’ rent</td><td>None</td></tr>
 <tr><td>Who can see your products</td><td>People who walk in</td><td>Buyers across Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman</td></tr>
 <tr><td>Open hours</td><td>When staff are there</td><td>24 hours a day</td></tr>
 <tr><td>Time to start</td><td>Weeks</td><td>Minutes</td></tr></table>
 <h2>Selling without paying rent</h2>
-<p>myboutki gives every seller a shop profile, like an Instagram page built only for selling. You post photos and a price, buyers browse and save items, then send you one WhatsApp message with everything in their cart. Opening a shop is free. If you want extra reach, you can boost a post or get the blue Verified badge, and you only pay when you choose to.</p>
-<p>You can still keep a physical shop if it works for you. Many sellers use myboutki first to test which products sell, and only rent space once they know the demand is there.</p>
+<p>myboutiki gives every seller a shop profile, like an Instagram page built only for selling. You post photos and a price, buyers browse and save items, then send you one WhatsApp message with everything in their cart. Opening a shop is free. If you want extra reach, you can boost a post or get the blue Verified badge, and you only pay when you choose to.</p>
+<p>You can still keep a physical shop if it works for you. Many sellers use myboutiki first to test which products sell, and only rent space once they know the demand is there.</p>
 ${cta.en}`,
     },
     ar: {
@@ -91,7 +91,7 @@ ${cta.ar}`,
     img: '/img/watch.jpg',
     en: {
       title: 'Why a platform made only for selling beats posting on social media',
-      desc: 'Instagram and Snapchat are built for entertainment. Here is why sellers in the Gulf get more orders on a platform built only for buying and selling, and how myboutki works.',
+      desc: 'Instagram and Snapchat are built for entertainment. Here is why sellers in the Gulf get more orders on a platform built only for buying and selling, and how myboutiki works.',
       tag: 'Marketing',
       body: `
 <p>Most small shops in the Gulf started on Instagram, Snapchat or TikTok. They are great for being seen, but they were not built for buying. Buyers scroll past your post between videos, friends and ads, and your products compete with everything else on their screen.</p>
@@ -103,7 +103,7 @@ ${cta.ar}`,
 <li><b>Reach keeps shrinking.</b> Without paid ads, a new post may only reach a small part of your followers.</li>
 </ul>
 <h2>What a selling-only platform does differently</h2>
-<p>On myboutki, everyone who opens the app is there to shop. Every post is an item with a price and a product code. Buyers can search, filter by category such as Apparel, Watches or Derma Beauty, save items to Favourites and follow shops.</p>
+<p>On myboutiki, everyone who opens the app is there to shop. Every post is an item with a price and a product code. Buyers can search, filter by category such as Apparel, Watches or Derma Beauty, save items to Favourites and follow shops.</p>
 <ul>
 <li><b>Clear prices</b> in KWD, SAR, AED, BHD, QAR or OMR.</li>
 <li><b>One cart, one WhatsApp message.</b> The buyer adds items and sends the seller a single message listing every item, price and link.</li>
@@ -112,7 +112,7 @@ ${cta.ar}`,
 <li><b>Boost a post</b> to show it first in Home, Explore and search in the Gulf countries you choose.</li>
 </ul>
 <h2>It is not either-or</h2>
-<p>Keep your Instagram for brand stories. Use myboutki as your shop window and checkout. You can share any item to Instagram as a ready-made post or story image, with your price and a link back to the item, so your followers can order in a few taps.</p>
+<p>Keep your Instagram for brand stories. Use myboutiki as your shop window and checkout. You can share any item to Instagram as a ready-made post or story image, with your price and a link back to the item, so your followers can order in a few taps.</p>
 <h2>Why this matters more in 2026</h2>
 <p>Kuwait now regulates online selling. ${a(SRC.law, 'Decree-Law No. 10 of 2026')} covers online sales, and ${a(SRC.law2, 'online sellers must now secure a licence')}. A clear shop with fixed prices, product codes and order records makes running a proper business much easier than a feed of DMs.</p>
 ${cta.en}`,
@@ -160,13 +160,13 @@ ${cta.ar}`,
 <p>In November 2026, Kuwait’s Ministry of Commerce and Industry ${a(SRC.freelance, 'allowed eligible Kuwaiti citizens to run one-person freelance companies without renting a shop or office')}, with applications through Kuwait Business Centre and the Sahel apps. These licences ${a(SRC.freelance, 'cover selling your own products through exhibits, temporary markets and online platforms')}. Separately, the ${a(SRC.law, 'Digital Commerce Law (Decree-Law No. 10 of 2026)')} means ${a(SRC.law2, 'online sellers need a licence')}.</p>
 <p class="note">Rules change and depend on your situation, so confirm the exact requirements with the Ministry of Commerce and Industry before you start. This article is general information, not legal advice.</p>
 <h2>2. Take photos that sell</h2>
-<ul><li>Use daylight near a window and a plain wall or sheet.</li><li>Show the whole item, then close-ups of the fabric, stitching or details.</li><li>Add a photo of the item being worn or used. On myboutki you can post up to 10 photos per item.</li></ul>
+<ul><li>Use daylight near a window and a plain wall or sheet.</li><li>Show the whole item, then close-ups of the fabric, stitching or details.</li><li>Add a photo of the item being worn or used. On myboutiki you can post up to 10 photos per item.</li></ul>
 <h2>3. Write a clear caption and price</h2>
-<p>Say what it is, the size or measurements, the material and the condition. Always show the price. myboutki writes a short headline from your caption automatically and gives every item a product code, so buyers can ask for “MB000123” instead of describing it.</p>
+<p>Say what it is, the size or measurements, the material and the condition. Always show the price. myboutiki writes a short headline from your caption automatically and gives every item a product code, so buyers can ask for “MB000123” instead of describing it.</p>
 <h2>4. Decide on delivery and payment</h2>
-<p>Pick one or two delivery options you trust and say them in your bio, for example “Delivery across Kuwait in 24 hours”. Tell buyers how they can pay. On myboutki, the buyer sends you one WhatsApp message with every item and the total, and you confirm delivery and payment directly.</p>
+<p>Pick one or two delivery options you trust and say them in your bio, for example “Delivery across Kuwait in 24 hours”. Tell buyers how they can pay. On myboutiki, the buyer sends you one WhatsApp message with every item and the total, and you confirm delivery and payment directly.</p>
 <h2>5. Build trust</h2>
-<ul><li>Add your logo, a short bio, your phone and links such as your Instagram.</li><li>Use highlights for “New collection”, “Feedback” and “Branches”.</li><li>Get the blue Verified badge: you show an ID to myboutki once, and buyers see a real, accountable shop. Verified shops also appear first.</li></ul>
+<ul><li>Add your logo, a short bio, your phone and links such as your Instagram.</li><li>Use highlights for “New collection”, “Feedback” and “Branches”.</li><li>Get the blue Verified badge: you show an ID to myboutiki once, and buyers see a real, accountable shop. Verified shops also appear first.</li></ul>
 <h2>6. Grow</h2>
 <p>Post new items regularly, share them to Instagram as ready-made images, and boost your best item to show it first in Home, Explore and search in the Gulf countries you choose.</p>
 ${cta.en}`,
@@ -204,11 +204,11 @@ ${cta.ar}`,
       body: `
 <p>Whether you already have a shop or sell from home, more sales rarely come from a bigger space. They come from more people seeing your products and an easier way to order. Here are seven things that work.</p>
 <h2>1. Put every product online with a price</h2>
-<p>A buyer who sees the price decides faster. List every item on myboutki with photos, size details and the price, so people can shop even when your shop is closed.</p>
+<p>A buyer who sees the price decides faster. List every item on myboutiki with photos, size details and the price, so people can shop even when your shop is closed.</p>
 <h2>2. Reach the whole Gulf, not just your street</h2>
-<p>A shop in one area sells to one area. On myboutki, buyers across Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman can find you, see prices in their own currency and message you.</p>
+<p>A shop in one area sells to one area. On myboutiki, buyers across Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman can find you, see prices in their own currency and message you.</p>
 <h2>3. Make ordering one message</h2>
-<p>Lost orders often happen in long chats. With the myboutki cart, the buyer sends one WhatsApp message with every item, quantity, price and link. You just confirm.</p>
+<p>Lost orders often happen in long chats. With the myboutiki cart, the buyer sends one WhatsApp message with every item, quantity, price and link. You just confirm.</p>
 <h2>4. Use product codes</h2>
 <p>Every item gets a code like MB000123. Use it in your stories and branch shelves so buyers can find the exact item online, and so you can track what sells.</p>
 <h2>5. Boost only your best items</h2>

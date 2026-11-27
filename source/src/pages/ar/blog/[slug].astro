@@ -6,12 +6,12 @@ const { p } = Astro.props;
 const SITE = 'https://myboutki.com', url = `${SITE}/ar/blog/${p.slug}/`;
 const jsonld = [
   { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: p.ar.title, description: p.ar.desc, image: SITE + p.img, datePublished: p.date, dateModified: p.date, inLanguage: 'ar', mainEntityOfPage: url,
-    author: { '@type': 'Organization', name: 'myboutki', url: SITE }, publisher: { '@type': 'Organization', name: 'myboutki', logo: { '@type': 'ImageObject', url: SITE + '/img/favicon.png?v=2' } } },
-  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'myboutki', item: SITE + '/' }, { '@type': 'ListItem', position: 2, name: 'المدونة', item: SITE + '/ar/blog/' }, { '@type': 'ListItem', position: 3, name: p.ar.title, item: url }] },
+    author: { '@type': 'Organization', name: 'myboutiki', url: SITE }, publisher: { '@type': 'Organization', name: 'myboutiki', logo: { '@type': 'ImageObject', url: SITE + '/img/favicon.png?v=2' } } },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'myboutiki', item: SITE + '/' }, { '@type': 'ListItem', position: 2, name: 'المدونة', item: SITE + '/ar/blog/' }, { '@type': 'ListItem', position: 3, name: p.ar.title, item: url }] },
 ];
 const more = posts.filter(x => x.slug !== p.slug).slice(0, 3);
 ---
-<Blog lang="ar" title={p.ar.title + ' | myboutki'} description={p.ar.desc} path={`/ar/blog/${p.slug}/`} jsonld={jsonld} image={SITE + p.img} ogType="article">
+<Blog lang="ar" title={p.ar.title + ' | myboutiki'} description={p.ar.desc} path={`/ar/blog/${p.slug}/`} jsonld={jsonld} image={SITE + p.img} ogType="article">
   <article>
     <p><a href="/ar/blog/" class="meta">→ كل المقالات</a></p>
     <span class="tag">{p.ar.tag}</span>
