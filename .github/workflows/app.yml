@@ -1,5 +1,6 @@
 name: myboutki app
 
+# Google OAuth client IDs below are public identifiers (not secrets).
 on:
   push:
     paths: ['app/**', '.github/workflows/app.yml']
@@ -26,8 +27,8 @@ jobs:
       - name: Build APK and App Bundle
         run: |
           cd app
-          flutter build apk --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID }}
-          flutter build appbundle --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID }}
+          flutter build apk --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
+          flutter build appbundle --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
       - uses: actions/upload-artifact@v4
         with:
           name: myboutki-android
@@ -43,8 +44,8 @@ jobs:
         with: { channel: stable, cache: true }
       - name: Prepare project
         env:
-          GOOGLE_IOS_CLIENT_ID: ${{ vars.GOOGLE_IOS_CLIENT_ID }}
-          GOOGLE_IOS_REVERSED_CLIENT_ID: ${{ vars.GOOGLE_IOS_REVERSED_CLIENT_ID }}
+          GOOGLE_IOS_CLIENT_ID: ${{ vars.GOOGLE_IOS_CLIENT_ID || '757704906396-lr2tf39v4eknna166gvnpm6qukbei0u7.apps.googleusercontent.com' }}
+          GOOGLE_IOS_REVERSED_CLIENT_ID: ${{ vars.GOOGLE_IOS_REVERSED_CLIENT_ID || 'com.googleusercontent.apps.757704906396-lr2tf39v4eknna166gvnpm6qukbei0u7' }}
         run: bash app/tool/prepare.sh
       - name: Build iOS (no signing, checks that it compiles)
-        run: cd app && flutter build ios --release --no-codesign --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID }}
+        run: cd app && flutter build ios --release --no-codesign --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}

@@ -469,6 +469,7 @@ else if(c==='ok'){try{const sc=base*z,W0=Math.round(fw/sc),H0=Math.round(fh/sc),
 g.translate(W/2+x*q,H/2+y*q);g.rotate(rot*Math.PI/180);g.scale(sc*q,sc*q);g.drawImage(im,-im.naturalWidth/2,-im.naturalHeight/2);
 cv.toBlob(bl=>{close();if(bl)done(URL.createObjectURL(bl));else toast(tr("Couldn't crop this photo"))},'image/jpeg',.9)}catch(_){close();toast(tr("Couldn't crop this photo"))}}})}
 const IS_APP=/myboutkiApp/.test(navigator.userAgent),IS_IOS_APP=IS_APP&&/myboutkiApp\/[^ ]+ \(ios\)/.test(navigator.userAgent);
+if(IS_APP)document.addEventListener('click',e=>{const l=e.target.closest&&e.target.closest('a[target=_blank]');if(!l||!/^https?:/i.test(l.href)||!window.MBApp)return;let h;try{h=new URL(l.href).hostname}catch(_){return}e.preventDefault();if(/(^|\.)myboutik?i\.com$/.test(h)){location.href=l.href;return}MBApp.postMessage(JSON.stringify({type:'open',url:l.href}))},true);
 function esignForm(){const c=CC[S.ci],e=S.es||(S.es={});return top(tr('Create new account'),'authback')+`<div class="body ef" style="padding:18px;display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;justify-content:center"><label class="esav" aria-label="${tr('Add profile picture')}">${e.av?`<img src="${e.av}" alt="">`:ic('add_a_photo','','font-size:30px;color:var(--muted)')}<input type="file" id="esavin" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0"></label></div>
 <div class="muted" style="text-align:center;font-size:12px;margin-top:-8px">${tr('Profile picture (optional)')}</div>

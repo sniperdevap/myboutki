@@ -30,6 +30,9 @@ const List<String> kInside = [
   'myboutki.firebaseapp.com',
 ];
 // Google web client of the myboutiki Firebase project (set at build time).
+// Links to these always open in their own app
+const List<String> kExternal = ['wa.me', 'whatsapp.com', 'instagram.com', 'tiktok.com', 'snapchat.com', 'x.com', 'twitter.com', 'facebook.com', 'youtube.com', 'maps.google.com', 'maps.apple.com', 'apps.apple.com', 'play.google.com'];
+
 const String kGoogleServerClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
 void main() {
@@ -58,6 +61,7 @@ class Shell extends StatefulWidget {
 }
 
 class _ShellState extends State<Shell> {
+  DateTime? _payAt;
   late final WebViewController _web;
   int _progress = 0;
   bool _offline = false;
@@ -100,7 +104,13 @@ class _ShellState extends State<Shell> {
         final uri = Uri.tryParse(r.url);
         if (uri == null) return NavigationDecision.prevent;
         final isWeb = uri.scheme == 'http' || uri.scheme == 'https';
+        if (isWeb && (uri.host.contains('myfatoorah') || uri.path.startsWith('/pay'))) _payAt = DateTime.now();
         if (isWeb && (kInside.contains(uri.host) || uri.host.endsWith('.myfatoorah.com') || !r.isMainFrame)) {
+          return NavigationDecision.navigate;
+        }
+        // During a payment the bank's 3-D Secure / KNET pages must stay inside the app
+        final paying = _payAt != null && DateTime.now().difference(_payAt!).inMinutes < 20;
+        if (isWeb && paying && uri.scheme == 'https' && !kExternal.any((h) => uri.host == h || uri.host.endsWith('.$h'))) {
           return NavigationDecision.navigate;
         }
         // WhatsApp, phone, email, maps, other websites, app stores → open outside the app
@@ -142,6 +152,10 @@ class _ShellState extends State<Shell> {
         break;
       case 'apple':
         await _appleSignIn();
+        break;
+      case 'open':
+        final u = Uri.tryParse('${m['url'] ?? ''}');
+        if (u != null && (u.scheme == 'https' || u.scheme == 'http')) await launchUrl(u, mode: LaunchMode.externalApplication);
         break;
     }
   }
