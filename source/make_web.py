@@ -116,10 +116,10 @@ R("app.innerHTML=(S.pvOff?","app.dataset.v=S.stage!=='none'?'auth':(S.stack.leng
 R("(typeof n==='string'?n:'')","(typeof n==='string'&&n?`<div class=\"xfoot\">${n}</div>`:'')")
 R("app.innerHTML=S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=S.stage==='setup'?")
 # 5. deep links + language from URL
-R("try{restore(st)}catch(_){}\napplyLang();render();","""try{restore(st)}catch(_){}
+R("try{restore(st)}catch(_){}\nconst fromPay=","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
 {const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
-applyLang();render();""")
+const fromPay=""")
 R("let i18nQ=0;","document.documentElement.lang=S.lang;let i18nQ=0;") if "let i18nQ=0;" in s else None
 open('/tmp/app_web.html','w').write(s)
 print('ok',len(s))
