@@ -1303,7 +1303,7 @@ const x=isB?P.find(p=>String(p.id)===String(body.post)):null,thumb=x?`<div class
 const w=document.createElement('div');w.className='ckw';w.dir=ar?'rtl':'ltr';
 w.innerHTML=`<div class="ck" role="dialog" aria-label="${tr('Checkout')}"><div class="grab"></div><div class="ck-top"><b>${tr('Checkout')}</b><button data-c="x" aria-label="${tr('Close')}">${ic('close')}</button></div>
 <div class="ck-sum">${thumb}<div style="flex:1;min-width:0"><div class="ck-item">${esc(title)}</div><div class="ck-sub">@${esc(body.handle||'')}</div></div><div class="ck-amt"><div>KWD ${(+j.amount).toFixed(3)}</div><small>≈ $${j.usd}</small></div></div>
-<div class="ck-lbl">${tr('Pay with')}</div><div id="mfpay" class="ck-pay"><div class="ck-load"><span class="spin" style="position:static;margin:0;border-color:var(--line);border-top-color:#dd2a7b"></span></div></div>
+<div id="mfpay" style="margin-top:12px" class="ck-pay"><div class="ck-load"><span class="spin" style="position:static;margin:0;border-color:var(--line);border-top-color:#dd2a7b"></span></div></div>
 <div class="ck-msg" id="ckmsg"></div>
 <div class="ck-sec">${ic('lock','','font-size:16px')} ${tr('Payments are encrypted and processed securely in Kuwait')}</div></div>`;
 document.body.appendChild(w);requestAnimationFrame(()=>w.classList.add('on'));
