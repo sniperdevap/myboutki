@@ -237,7 +237,7 @@ def head(lang):
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="{'ar_KW' if ar else 'en_US'}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg?v=2">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#17212b" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2">
 <link rel="manifest" href="/manifest.webmanifest">\n<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
@@ -269,7 +269,7 @@ def page(path,title,desc,img,url,ld,extra_meta='',noscript=''):
 <meta property="og:image" content="{img}"><meta property="og:image:alt" content="{e(title)}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{e(title)}"><meta name="twitter:description" content="{e(desc)}"><meta name="twitter:image" content="{img}">
 {extra_meta}
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#17212b" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2"><link rel="manifest" href="/manifest.webmanifest">
 <script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
 <noscript><style>.stage{{display:none}}</style>{noscript}</noscript>"""
