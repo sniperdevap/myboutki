@@ -119,6 +119,44 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       q('INSERT INTO stores(handle,uid,email,data,created,updated) VALUES(?,?,?,?,?,?)').run(h, u.uid, u.email, JSON.stringify(sanitizeStore(b)), now, now);
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(h)) }, origin), true;
     }
+    // ---------- verification: Civil ID photos are private (admin only) ----------
+    if (p === '/api/verify' && req.method === 'POST') {
+      const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      let b; try { b = JSON.parse((await readRaw(req, 16e6)).toString('utf8')); } catch (_) { return json(res, 400, { error: 'Photos are too big. Try again.' }, origin), true; }
+      const h = String(b.h || '').toLowerCase(), row = q('SELECT * FROM stores WHERE handle=? AND uid=? AND banned=0').get(h, u.uid);
+      if (!row) return json(res, 403, { error: 'This shop is not yours' }, origin), true;
+      const save = du => { const mm = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(du || '')); if (!mm) return null; const buf = Buffer.from(mm[2], 'base64'); if (!buf.length || buf.length > 7e6) return null; const name = crypto.randomBytes(16).toString('hex') + '.' + (mm[1] === 'png' ? 'png' : mm[1] === 'webp' ? 'webp' : 'jpg'); fs.writeFileSync(path.join(PRIV, name), buf, { mode: 0o600 }); return name; };
+      const front = save(b.front), back = save(b.back);
+      if (!front || !back) return json(res, 400, { error: 'Add photos of the front and back of your card' }, origin), true;
+      const d = J(row.data), old = d.ver || {};
+      for (const f of [old.front, old.back]) if (f && /^[a-f0-9]{32}\.(jpg|png|webp)$/.test(f)) { try { fs.unlinkSync(path.join(PRIV, f)); } catch (_) {} }
+      d.ver = { status: 'pending', submitted: Date.now(), name: clean(b.name, 80), num: clean(b.num, 20), k: /^(KW|SA|AE|BH|QA|OM)$/.test(b.k) ? b.k : d.k, plan: b.plan === 'yearly' ? 'yearly' : 'monthly', front, back };
+      q('UPDATE stores SET data=?,updated=? WHERE handle=?').run(JSON.stringify(d), Date.now(), h);
+      console.log('verification submitted', h);
+      return json(res, 200, { ok: true, status: 'pending' }, origin), true;
+    }
+    if (p === '/api/admin/db/verifs' && req.method === 'GET') {
+      if (!isAdmin(req)) return json(res, 401, { error: 'Please sign in' }), true;
+      const list = q('SELECT * FROM stores').all().map(r => ({ r, d: J(r.data) })).filter(x => x.d.ver && x.d.ver.submitted).map(({ r, d }) => ({ handle: r.handle, shop: d.name, email: r.email, phone: d.phone || '', k: d.k, ver: { status: d.ver.status, submitted: d.ver.submitted, decided: d.ver.decided || null, note: d.ver.note || '', name: d.ver.name, num: d.ver.num, plan: d.ver.plan, front: d.ver.front, back: d.ver.back, until: d.ver.until || null } })).sort((a, z) => (a.ver.status === 'pending' ? 0 : 1) - (z.ver.status === 'pending' ? 0 : 1) || z.ver.submitted - a.ver.submitted);
+      return json(res, 200, list), true;
+    }
+    {
+      const mi = /^\/api\/admin\/db\/id\/([a-f0-9]{32}\.(jpg|png|webp))$/.exec(p);
+      if (mi) {
+        if (!isAdmin(req)) return json(res, 401, { error: 'Please sign in' }), true;
+        try { const buf = fs.readFileSync(path.join(PRIV, mi[1])); res.writeHead(200, { 'Content-Type': mi[2] === 'png' ? 'image/png' : mi[2] === 'webp' ? 'image/webp' : 'image/jpeg', 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' }); res.end(buf); } catch (_) { json(res, 404, { error: 'Not found' }); }
+        return true;
+      }
+      const mv = /^\/api\/admin\/db\/verifs\/([a-z0-9._]{3,30})\/(approve|reject)$/.exec(p);
+      if (mv && req.method === 'POST') {
+        if (!isAdmin(req)) return json(res, 401, { error: 'Please sign in' }), true;
+        const row = q('SELECT * FROM stores WHERE handle=?').get(mv[1]); if (!row) return json(res, 404, { error: 'Shop not found' }), true;
+        const b = await readBody(req).catch(() => ({})), d = J(row.data); if (!d.ver) return json(res, 400, { error: 'No request' }), true;
+        if (d.ver.status !== 'active') { d.ver.status = mv[2] === 'approve' ? 'approved' : 'rejected'; d.ver.decided = Date.now(); d.ver.note = clean((b && b.note) || '', 200); }
+        q('UPDATE stores SET data=?,updated=? WHERE handle=?').run(JSON.stringify(d), Date.now(), mv[1]);
+        return json(res, 200, { ok: true, status: d.ver.status }), true;
+      }
+    }
     let m;
     // ---------- log in with username or phone + password ----------
     // Finds the account's email, checks the password with Firebase, and only then returns the email

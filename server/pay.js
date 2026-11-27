@@ -295,7 +295,10 @@ http.createServer(async (req, res) => {
           daily: Object.entries(byDay).sort().map(([d, o]) => ({ d, views: o.views, visitors: o.visitors.size })),
           screens: count(e => e.e === 'view', e => e.k), items: count(e => e.e === 'item', e => e.k), categories: count(e => e.e === 'cat' || e.e === 'item', e => e.c),
           shops: count(e => e.e === 'shop' || e.e === 'item', e => e.s), searches: count(e => e.e === 'search', e => (e.k || '').toLowerCase()), clicks: count(e => e.e === 'tap', e => e.k),
-          countries: count(() => true, e => e.cc), languages: count(() => true, e => e.l),
+          countries: count(() => true, e => e.cc), languages: count(() => true, e => e.l), sources: count(() => true, e => e.src || 'direct'),
+          online: new Set(readLog('events.jsonl', Date.now() - 5 * 60e3).map(e => e.v)).size,
+          funnel: { opened: new Set(ev.filter(e => e.e === 'view' && e.k === 'sign-in').map(e => e.v)).size, google: new Set(ev.filter(e => e.e === 'tap' && e.k === 'google').map(e => e.v)).size, email: new Set(ev.filter(e => e.e === 'tap' && /^(esign|elogin|emailsignup)$/.test(e.k)).map(e => e.v)).size },
+          visitorCountries: (() => { const m = new Map(); for (const e of ev) if (e.cc) { const k = e.cc; (m.get(k) || m.set(k, new Set()).get(k)).add(e.v); } return [...m].map(([k, v]) => [k, v.size]).sort((a, z) => z[1] - a[1]).slice(0, 30); })(),
           payments: readLog('payments.jsonl', since),
         });
       }
