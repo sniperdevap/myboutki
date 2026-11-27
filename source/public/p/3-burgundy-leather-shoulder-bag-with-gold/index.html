@@ -177,14 +177,18 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .crophint{text-align:center;font-size:13px;opacity:.75;margin:8px 16px}
 .cropbar{display:flex;align-items:center;gap:12px;padding:6px 16px max(14px,env(safe-area-inset-bottom))}.cropbar input{flex:1;accent-color:#e0b44c}.cropbar button{color:#fff;height:40px;padding:0 10px;font-size:14px}
 html.noscroll,html.noscroll body{overflow:hidden}
-#splash{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s ease,transform .4s ease}
-#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
-.sp-in{display:flex;flex-direction:column;align-items:center;gap:14px;animation:spIn .6s cubic-bezier(.2,.8,.2,1) both}
-.sp-logo{width:min(42vw,190px);height:auto}
-.sp-name{font-weight:700;font-size:26px;letter-spacing:.5px;background:linear-gradient(90deg,#f58529,#dd2a7b 45%,#8134af 75%,#515bd4);-webkit-background-clip:text;background-clip:text;color:transparent}
-.sp-bar{width:90px;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:6px}.sp-bar i{display:block;height:100%;width:40%;border-radius:3px;background:linear-gradient(90deg,#f58529,#dd2a7b,#8134af,#515bd4);animation:spBar 1s ease-in-out infinite}
-.sp-foot{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--muted)}
-@keyframes spIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}@keyframes spBar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+#splash{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .45s ease}
+#splash.out{opacity:0;pointer-events:none}#splash.out .sp-in{transform:scale(1.08);transition:transform .45s ease}
+#splash::before{content:"";position:absolute;width:min(90vw,460px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(221,42,123,.16),rgba(129,52,175,.10) 40%,transparent 70%);animation:spGlow 1.6s ease-out both}
+.sp-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.sp-lw{display:block;animation:spLogo .8s cubic-bezier(.2,.9,.25,1.15) both}.sp-logo{display:block;width:min(44vw,200px);height:auto}
+.sp-name{font-weight:700;font-size:28px;letter-spacing:.6px;background:linear-gradient(90deg,#f58529,#dd2a7b,#8134af,#515bd4,#dd2a7b,#f58529);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:spName .6s .3s ease-out both,spShine 2.2s .3s linear infinite}
+.sp-foot{position:absolute;bottom:max(28px,env(safe-area-inset-bottom));font-size:13px;color:var(--muted);animation:spName .6s .5s ease-out both}
+@keyframes spLogo{0%{opacity:0;transform:scale(.6) rotate(-6deg);filter:blur(8px)}60%{opacity:1;filter:blur(0)}100%{opacity:1;transform:none;filter:blur(0)}}
+@keyframes spName{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes spShine{from{background-position:0% 50%}to{background-position:250% 50%}}
+@keyframes spGlow{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){#splash *,#splash::before{animation:none!important}}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .sp-logo{filter:invert(1) hue-rotate(180deg)}}:root[data-theme=dark] .sp-logo{filter:invert(1) hue-rotate(180deg)}
 
 /* website: full screen, Instagram-web layout on desktop */
@@ -262,7 +266,7 @@ html:not(.icok) .ms{color:transparent!important}
 </style>
 </head>
 <body data-view="app">
-<div id="splash" aria-hidden="true"><div class="sp-in"><img src="/img/mark.svg?v=2" alt="" class="sp-logo"><div class="sp-name">myboutki</div></div><div class="sp-foot">Shop and sell across the Gulf</div></div>
+<div id="splash" aria-hidden="true"><div class="sp-in"><span class="sp-lw"><img src="/img/mark.svg?v=2" alt="" class="sp-logo"></span><div class="sp-name">myboutki</div></div><div class="sp-foot">Shop and sell across the Gulf</div></div>
 <script>try{if(sessionStorage.getItem('mb_sp'))document.getElementById('splash').remove();else sessionStorage.setItem('mb_sp','1')}catch(e){}window.__sp0=Date.now()</script>
 <div class="stage">
 <div class="phone" id="phone"><div id="app" style="flex:1;display:flex;flex-direction:column;min-height:0"></div><div class="toast" id="toast"></div></div>
@@ -1351,7 +1355,7 @@ const fromPay=/\/pay\/return/.test(location.pathname);loadCfg();applyLang();rend
 new MutationObserver(queueSave).observe(app,{childList:true});
 document.documentElement.lang=S.lang;let i18nQ=0;new MutationObserver(()=>{if(S.lang!=='ar'||i18nQ)return;i18nQ=1;queueMicrotask(()=>{i18nQ=0;i18n(app)})}).observe(app,{childList:true,subtree:true});
 addEventListener('pagehide',saveNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
-boot().finally(()=>{const sp=document.getElementById('splash');if(!sp)return;setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),450)},Math.max(0,1100-(Date.now()-(window.__sp0||0))))});
+boot().finally(()=>{const sp=document.getElementById('splash');if(!sp)return;setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),450)},Math.max(0,1300-(Date.now()-(window.__sp0||0))))});
 const lateFont=()=>{const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap';document.head.appendChild(l)};
 
 }
