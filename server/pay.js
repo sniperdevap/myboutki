@@ -67,6 +67,7 @@ const toKwd = usd => Math.ceil(usd * CONFIG.boost.usdToKwd * 1000) / 1000;
 const logTo = (f, o) => fs.appendFile(path.join(DATA, f), JSON.stringify(o) + '\n', () => {});
 const readLog = (f, since) => { try { return fs.readFileSync(path.join(DATA, f), 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch (_) { return null; } }).filter(o => o && (!since || o.t >= since)); } catch (_) { return []; } };
 const DB = makeDb({ DATA, SAMPLE_HANDLES: ['noor.abayas', 'cheetah.watches', 'q8.menswear', 'thepinkstore'] });
+const failSeen = new Set();
 const paidSeen = new Set(readLog('payments.jsonl').map(p => String(p.invoiceId)));
 
 // ---- admin login (signed cookie) ----
@@ -146,6 +147,8 @@ http.createServer(async (req, res) => {
       const post = String(b.post || '').replace(/[^0-9a-zA-Z_-]/g, '').slice(0, 40);
       if (p.post && !post) return json(res, 400, { error: 'Missing post' }, origin);
       const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || '') ? clean(b.email, 100) : undefined;
+      const ua = String(req.headers['user-agent'] || ''), plat = /myboutkiApp\/[^ ]+ \(ios\)/.test(ua) ? 'iPhone app' : /myboutkiApp/.test(ua) ? 'Android app' : /iPhone|iPad/.test(ua) ? 'iPhone web' : /Android/.test(ua) ? 'Android web' : 'Computer';
+      logTo('attempts.jsonl', { t: Date.now(), stage: 'started', product: b.product, name: p.name, handle, amount: p.kwd, currency: 'KWD', platform: plat });
       const order = { Amount: p.kwd, Currency: 'KWD', ExternalIdentifier: [b.product, handle, p.post ? post : '', ...extra].join('|') };
       if (embedded) {
         // Payment form shown inside our own page (no MyFatoorah invoice page)
@@ -213,6 +216,7 @@ http.createServer(async (req, res) => {
       const paid = String(inv.Status).toUpperCase() === 'PAID' && String(tr.Status).toUpperCase() === 'SUCCESS';
       const p = PRODUCTS[product] || (product === 'boost' ? { days: +bDays || 0 } : null);
       if (paid) { try { DB.applyPaid({ product, handle, post, days: p ? p.days : 0, invoiceId: inv.Id, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, placement: PLACES.includes(bPl) ? bPl : null }); } catch (e) { console.error('applyPaid', e.message); } }
+      if (!paid && /FAIL|ERROR|CANCEL|DECLIN|EXPIRE|REJECT/.test(String(tr.Status || '').toUpperCase() + ' ' + String(inv.Status || '').toUpperCase()) && !failSeen.has(id)) { failSeen.add(id); logTo('attempts.jsonl', { t: Date.now(), stage: 'failed', paymentId: id, invoiceId: inv.Id || null, product, handle, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null, method: tr.PaymentMethod || null, status: tr.Status || inv.Status || null, error: (tr.Error && (tr.Error.Message || tr.Error.Code)) || tr.ErrorCode || null }); }
       if (paid && inv.Id && !paidSeen.has(String(inv.Id))) { paidSeen.add(String(inv.Id)); logTo('payments.jsonl', { t: Date.now(), invoiceId: inv.Id, product, handle, post: post || null, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null, method: tr.PaymentMethod || null }); }
       return json(res, 200, { paid, status: inv.Status, product, handle, post: post || null, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, placement: PLACES.includes(bPl) ? bPl : null, paymentId: id, days: p ? p.days : 0, invoiceId: inv.Id, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null }, origin);
     }
@@ -285,6 +289,7 @@ http.createServer(async (req, res) => {
         const pass = String(b.pass || ''); if (pass.length < 6) return json(res, 400, { error: 'Password: at least 6 characters' });
         const adm = readAdmin(); fs.writeFileSync(ADMIN_FILE, JSON.stringify({ ...adm, hash: hashPass(pass), changed: Date.now() }), { mode: 0o600 }); return json(res, 200, { ok: true });
       }
+      if (url.pathname === '/api/admin/attempts') return json(res, 200, readLog('attempts.jsonl').reverse().slice(0, 500));
       if (url.pathname === '/api/admin/payments') return json(res, 200, readLog('payments.jsonl').reverse().slice(0, 500));
       if (url.pathname === '/api/admin/stats') {
         const days = Math.min(90, Math.max(1, +url.searchParams.get('days') || 30)), since = Date.now() - days * 864e5, ev = readLog('events.jsonl', since);
