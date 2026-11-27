@@ -193,9 +193,9 @@ http.createServer(async (req, res) => {
           const txt = Buffer.concat([dc.update(Buffer.from(String(b.paymentData), 'base64')), dc.final()]).toString('utf8');
           const pd = JSON.parse(txt), t = pd.Transaction || pd.transaction || {};
           id = String(t.PaymentId || t.paymentId || pd.PaymentId || '').replace(/[^0-9]/g, '');
-        } catch (e) { console.error('decrypt', e.message); }
+        } catch (e) { console.error('decrypt', e.message, 'len', String(b.paymentData).length); }
       }
-      if (!/^[0-9]{6,40}$/.test(id)) return json(res, 400, { paid: false, error: 'Could not confirm the payment yet' }, origin);
+      if (!/^[0-9]{6,40}$/.test(id)) { console.error('session-result: no payment id', sid, Object.keys(b)); return json(res, 400, { paid: false, error: 'Could not confirm the payment yet' }, origin); }
       url.searchParams.set('paymentId', id);
       return payStatus(id);
     }
