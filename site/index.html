@@ -1039,7 +1039,7 @@ const prs=document.getElementById('ap').value.trim();if(prs&&!(pr>0)){er.textCon
 case 'inbox':S.menu=false;S.isel=null;S.stack.push({k:'inbox'});render();break;
 case 'chat':S.draft='';S.stack.push({k:'chat',u:el.dataset.u});render();scrollChat();break;
 case 'msgseller':{S.story=null;clearTimeout(storyT);const u=el.dataset.u;if(u===me()){toast("That's your own shop");break}const c=chatWith(u,+el.dataset.id||undefined);S.draft=el.dataset.id&&!c.m.length?'Hi, is this still available?':'';S.stack.push({k:'chat',u});render();scrollChat();const i=document.getElementById('msgin');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}break}
-case 'sendmsg':{const i=document.getElementById('msgin'),t=i.value.trim();if(!t){i.focus();break}const u=el.dataset.u,c=chatWith(u);if(S.medit&&S.medit.u===u){const m=c.m[S.medit.i];S.medit=null;S.draft='';if(m&&m.f===me()&&!m.del&&m.t!==t){m.t=t;m.e=1;msgEdit(c,m);queueSave();toast(tr('Message edited'))}render(true);scrollChat();break}c.m.push({f:me(),t,at:Date.now()});S.draft='';render(true);scrollChat();document.getElementById('msgin').focus();
+case 'sendmsg':{const i=document.getElementById('msgin'),t=i.value.trim();if(!t){i.focus();break}const u=el.dataset.u,c=chatWith(u);if(S.medit&&S.medit.u===u){const m=c.m[S.medit.i];S.medit=null;S.draft='';if(m&&m.f===me()&&!m.del&&m.t!==t){m.t=t;m.e=1;msgEdit(c,m);queueSave()}render(true);scrollChat();break}c.m.push({f:me(),t,at:Date.now()});S.draft='';render(true);scrollChat();document.getElementById('msgin').focus();
 msgPush(c,c.m[c.m.length-1]);break}
 case 'menu':S.menu=true;render(true);break;
 case 'msgact':{if(e.target.closest('a,button,img'))break;const sel=getSelection&&String(getSelection());if(sel)break;S.ma={u:el.dataset.u,i:+el.dataset.i};render(true);break}
@@ -1047,7 +1047,7 @@ case 'maclose':if(e.target===el){S.ma=null;render(true)}break;
 case 'maedit':{const a=S.ma,c=chatWith(a.u),m=c.m[a.i];S.ma=null;S.medit={u:a.u,i:a.i};S.draft=m.t;render(true);const n=document.getElementById('msgin');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}break}
 case 'meditx':S.medit=null;S.draft='';render(true);break;
 case 'macopy':{const a=S.ma,m=chatWith(a.u).m[a.i];S.ma=null;render(true);try{navigator.clipboard.writeText(m.t).then(()=>toast(tr('Copied')),()=>toast(tr('Copied')))}catch(_){}break}
-case 'madel':{const a=S.ma,c=chatWith(a.u),m=c.m[a.i];S.ma=null;if(m&&m.f===me()){if(VA&&VA.k===String(m.sid||m.at)){VA.pause();VA=null}m.del=1;m.t='';m.u=null;msgDel(c,m);queueSave();if(S.medit&&S.medit.i===a.i)S.medit=null}render(true);toast(tr('Message deleted'));break}
+case 'madel':{const a=S.ma,c=chatWith(a.u),m=c.m[a.i];S.ma=null;if(m&&m.f===me()){if(VA&&VA.k===String(m.sid||m.at)){VA.pause();VA=null}m.del=1;m.t='';m.u=null;msgDel(c,m);queueSave();if(S.medit&&S.medit.i===a.i)S.medit=null}render(true);break}
 case 'mimg':S.mimg=el.dataset.src;render(true);break;
 case 'mimgx':S.mimg=null;render(true);break;
 case 'mlink':break;
