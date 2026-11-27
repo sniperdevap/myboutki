@@ -68,7 +68,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   function sanitizePost(b, d = {}) {
     const imgs = (Array.isArray(b.imgs) ? b.imgs : d.imgs || []).filter(okUrl).slice(0, 10);
     const cur = /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || null, po = 'po' in b ? (b.po != null && isFinite(+b.po) && +b.po > 0 ? Math.min(1e8, +b.po) : null) : d.po ?? null;
-    return { ...d, h: clean(b.h ?? d.h, 120), d: clean(b.d ?? d.d, 2200), p: 'p' in b ? Math.max(0, Math.min(1e7, +b.p || 0)) : Math.max(0, +d.p || 0), cur, po, c: clean(b.c ?? d.c, 40), imgs,
+    return { ...d, h: clean(b.h ?? d.h, 120), d: clean(b.d ?? d.d, 2200), p: 'p' in b ? Math.max(0, Math.min(1e7, +b.p || 0)) : Math.max(0, +d.p || 0), cur, po, c: clean(b.c ?? d.c, 40), aud: ['women', 'men', 'kids', ''].includes(b.aud) ? b.aud : d.aud || '', imgs,
       ic: clean(b.ic ?? d.ic, 30), bg: clean(b.bg ?? d.bg, 12), fg: clean(b.fg ?? d.fg, 12), l: Math.max(0, +d.l || 0),
       sold: !!(b.sold ?? d.sold), soldAt: b.sold ? (+b.soldAt || d.soldAt || Date.now()) : null, soldPrice: b.sold ? (+b.soldPrice || d.soldPrice || null) : null, rp: +b.rp || d.rp || null,
       boost: d.boost || null }; // boosts are only set by the payment check, never by the browser
