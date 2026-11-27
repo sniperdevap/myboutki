@@ -428,7 +428,7 @@ const SUBS_H=new Set();
 const VER_SAMPLE=new Set(['thepinkstore','cheetah.watches']);
 const isVer=h=>{const r=Object.values(REG).find(r=>r.handle===h);if(r)return !!(r.ver&&r.ver.status==='active'&&r.ver.until>Date.now());return VER_SAMPLE.has(h)||SUBS_H.has(h)};
 const VB=(h,z=15)=>isVer(h)?`<svg class="vb" viewBox="0 0 24 24" width="${z}" height="${z}" role="img" aria-label="Verified" style="flex:none;vertical-align:-2px;margin-left:3px"><g fill="#1D9BF0">${[0,45,90,135,180,225,270,315].map(a=>`<circle cx="${(12+6.3*Math.cos(a*Math.PI/180)).toFixed(2)}" cy="${(12+6.3*Math.sin(a*Math.PI/180)).toFixed(2)}" r="4.4"/>`).join('')}<circle cx="12" cy="12" r="8"/></g><path d="M7.6 12.3l2.9 2.9 5.9-6.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`:'';
-let USD_KWD=0.31;const bKwd=usd=>Math.ceil(usd*USD_KWD*1000)/1000,impr=d=>[Math.round(d*25),Math.round(d*60)];
+let USD_KWD=0.31;const bKwd=usd=>Math.ceil(usd*USD_KWD*1000)/1000,impr=d=>[Math.round(d*15),Math.round(d*40)];
 const GOALS=[['visits','More profile visits','Help people discover your shop and see your other items'],['messages','More messages','Get buyers to message you or order on WhatsApp'],['views','More item views','Show this item to more people who shop this category']];
 const myCC=()=>{const u=S.user;if(u&&u.k)return u.k;return (CUR[S.cur]||{}).k||''};
 const isBoost=x=>!!(x.boost&&x.boost.until>Date.now()&&(!x.boost.cc||!x.boost.cc.length||x.s===me()||!myCC()||x.boost.cc.includes(myCC())));
