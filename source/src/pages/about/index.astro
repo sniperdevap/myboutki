@@ -24,14 +24,14 @@ const faq = [
   ['When does myboutki launch?','myboutki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
 ];
 const jsonld = [
-  { '@context':'https://schema.org','@type':'Organization','name':'myboutki','url':SITE,'logo':`${SITE}/img/favicon.png`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
+  { '@context':'https://schema.org','@type':'Organization','name':'myboutki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
   { '@context':'https://schema.org','@type':'WebSite','name':'myboutki','url':SITE,'inLanguage':['en','ar'],'description':'A social media marketplace for sellers in the Gulf to sell online without renting a shop.'},
   { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutki','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','description':'Open your own online shop, post items with photos and sell on WhatsApp without paying rent for a store.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':SITE},
   { '@context':'https://schema.org','@type':'FAQPage','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
 ];
 ---
 <Base path="/about/" jsonld={jsonld}>
-<header class="top"><a href="/" class="brand" aria-label="myboutki home"><img src="/img/mark.svg" alt="" width="64" height="41" /><span>myboutki</span></a><nav aria-label="Sections"><a href="#why">Why myboutki</a><a href="#how">How it works</a><a href="#faq">FAQ</a><a href="/ar/about/" class="lang" hreflang="ar" lang="ar">العربية</a></nav></header>
+<header class="top"><a href="/" class="brand" aria-label="myboutki home"><img src="/img/mark.svg?v=2" alt="" width="64" height="41" /><span>myboutki</span></a><nav aria-label="Sections"><a href="#why">Why myboutki</a><a href="#how">How it works</a><a href="#faq">FAQ</a><a href="/ar/about/" class="lang" hreflang="ar" lang="ar">العربية</a></nav></header>
 <main>
   <section class="wrap hero-wrap">
     <div class="hero">

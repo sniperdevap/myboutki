@@ -6,7 +6,7 @@ def R(a,b,n=1):
     assert s.count(a)==n,(a[:90],s.count(a));s=s.replace(a,b)
 # 1. absolute asset paths
 names='abaya|watch|bag|polo|av_pink|av_cheetah|av_diamond|av_noor|mark|logo'
-s=re.sub(r'(?<![\w/.-])((?:%s)\.(?:jpg|svg|png))'%names,r'/img/\1',s)
+s=re.sub(r'(?<![\w/.-])((?:%s)\.(?:jpg|svg|png))'%names,r'/img/\1',s);s=s.replace('/img/mark.svg','/img/mark.svg?v=2')
 s=re.sub(r'url\((ibm-plex-sans-arabic-arabic-\d+-normal\.woff2)\)',r'url(/fonts/\1)',s)
 # 2. remove dashboard switch, hide dashboard
 # 3. website CSS
@@ -85,7 +85,7 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
 """
 R("</style>",WEBCSS+"</style>")
 # nav: brand + text labels (translated via data-l set in JS)
-R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
+R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg?v=2" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
 R('class="${S.tab===t?\'on\':\'\'}" aria-label="${l}">','class="${S.tab===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
 
 # 3b. wide desktop layout: right rail on feed, view-aware widths
@@ -222,7 +222,7 @@ def head(lang):
           'myboutki is an Instagram-style marketplace for the Gulf. Browse items from local shops, save favourites and order straight on WhatsApp. Open your own shop without renting a store — Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman.')
     url='https://myboutki.com/ar/' if ar else 'https://myboutki.com/'
     ld=[{"@context":"https://schema.org","@type":"WebSite","name":"myboutki","alternateName":"ماي بوتيكي","url":"https://myboutki.com/","inLanguage":["en","ar"]},
-        {"@context":"https://schema.org","@type":"Organization","name":"myboutki","url":"https://myboutki.com/","logo":"https://myboutki.com/img/favicon.png","email":"support@myboutki.com","areaServed":["KW","SA","AE","BH","QA","OM"]}]
+        {"@context":"https://schema.org","@type":"Organization","name":"myboutki","url":"https://myboutki.com/","logo":"https://myboutki.com/img/favicon.png?v=2","email":"support@myboutki.com","areaServed":["KW","SA","AE","BH","QA","OM"]}]
     e=html.escape
     return f'''<title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
@@ -233,13 +233,13 @@ def head(lang):
 <link rel="alternate" hreflang="x-default" href="https://myboutki.com/">
 <meta property="og:type" content="website"><meta property="og:site_name" content="myboutki">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg">
+<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg?v=2">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="{'ar_KW' if ar else 'en_US'}">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg?v=2">
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
-<link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/favicon.png">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2">
 <link rel="manifest" href="/manifest.webmanifest">\n<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
 <noscript><style>.stage{{display:none}}</style><p style="padding:24px;font:16px system-ui">{'ماي بوتيكي يحتاج إلى تفعيل JavaScript.' if ar else 'myboutki needs JavaScript turned on.'} <a href="{'/ar/about/' if ar else '/about/'}">{'عن ماي بوتيكي' if ar else 'About myboutki'}</a></p></noscript>'''
@@ -249,7 +249,7 @@ for lang,out in [('en','index.html'),('ar','ar/index.html')]:
     p=os.path.join(WEB,'public',out);os.makedirs(os.path.dirname(p),exist_ok=True);open(p,'w').write(t)
 for f in ['av_pink.jpg','av_cheetah.jpg','av_diamond.jpg','av_noor.jpg']:
     shutil.copy('/home/claude/proto/'+f,os.path.join(WEB,'public/img',f))
-open(os.path.join(WEB,'public/manifest.webmanifest'),'w').write(json.dumps({"name":"myboutki","short_name":"myboutki","start_url":"/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"/img/favicon.png","sizes":"512x512","type":"image/png"}]}))
+open(os.path.join(WEB,'public/manifest.webmanifest'),'w').write(json.dumps({"name":"myboutki","short_name":"myboutki","start_url":"/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"/img/favicon.png?v=2","sizes":"512x512","type":"image/png"}]}))
 open(os.path.join(WEB,'public/sitemap.xml'),'w').write('''<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 '''+''.join(f'''<url><loc>https://myboutki.com{a}</loc><xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{e_}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com{r}"/><changefreq>daily</changefreq><priority>{pr}</priority></url>
@@ -270,7 +270,7 @@ def page(path,title,desc,img,url,ld,extra_meta='',noscript=''):
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{e(title)}"><meta name="twitter:description" content="{e(desc)}"><meta name="twitter:image" content="{img}">
 {extra_meta}
 <meta name="theme-color" content="#ffffff">
-<link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="apple-touch-icon" href="/img/favicon.png"><link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2"><link rel="manifest" href="/manifest.webmanifest">
 <script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
 <noscript><style>.stage{{display:none}}</style>{noscript}</noscript>"""
     t=s.replace('<title>myboutki app preview</title>',h,1)

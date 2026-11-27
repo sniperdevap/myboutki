@@ -5,7 +5,7 @@ const {
   path = '/',
   jsonld = [],
   lang = 'en',
-  image = 'https://myboutki.com/img/og.jpg',
+  image = 'https://myboutki.com/img/og.jpg?v=2',
   ogType = 'website',
 } = Astro.props;
 const url = new URL(path, 'https://myboutki.com').href;
@@ -43,14 +43,14 @@ const arUrl = new URL('/ar' + enPath, 'https://myboutki.com').href;
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
 <meta name="theme-color" content="#ffffff" />
-<link rel="icon" type="image/svg+xml" href="/img/mark.svg" />
-<link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png" />
-<link rel="apple-touch-icon" href="/img/favicon.png" />
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2" />
+<link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png?v=2" />
+<link rel="apple-touch-icon" href="/img/favicon.png?v=2" />
 <link rel="sitemap" href="/sitemap.xml" />
 <link rel="stylesheet" href="/fonts/ar.css" />
 {lang === 'ar' && <link rel="preload" href="/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin />}
 {lang === 'ar' && <link rel="preload" href="/fonts/amiri-arabic-700-normal.woff2" as="font" type="font/woff2" crossorigin />}
-<link rel="preload" as="image" href="/img/mark.svg" />
+<link rel="preload" as="image" href="/img/mark.svg?v=2" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />

@@ -6,7 +6,7 @@ const { p } = Astro.props;
 const SITE = 'https://myboutki.com', url = `${SITE}/ar/blog/${p.slug}/`;
 const jsonld = [
   { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: p.ar.title, description: p.ar.desc, image: SITE + p.img, datePublished: p.date, dateModified: p.date, inLanguage: 'ar', mainEntityOfPage: url,
-    author: { '@type': 'Organization', name: 'myboutki', url: SITE }, publisher: { '@type': 'Organization', name: 'myboutki', logo: { '@type': 'ImageObject', url: SITE + '/img/favicon.png' } } },
+    author: { '@type': 'Organization', name: 'myboutki', url: SITE }, publisher: { '@type': 'Organization', name: 'myboutki', logo: { '@type': 'ImageObject', url: SITE + '/img/favicon.png?v=2' } } },
   { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'myboutki', item: SITE + '/' }, { '@type': 'ListItem', position: 2, name: 'المدونة', item: SITE + '/ar/blog/' }, { '@type': 'ListItem', position: 3, name: p.ar.title, item: url }] },
 ];
 const more = posts.filter(x => x.slug !== p.slug).slice(0, 3);
