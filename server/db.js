@@ -16,7 +16,9 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
     CREATE TABLE IF NOT EXISTS stores (handle TEXT PRIMARY KEY, uid TEXT NOT NULL, email TEXT, data TEXT NOT NULL, created INTEGER, updated INTEGER, banned INTEGER DEFAULT 0);
     CREATE INDEX IF NOT EXISTS stores_uid ON stores(uid);
     CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, handle TEXT NOT NULL, data TEXT NOT NULL, at INTEGER, updated INTEGER, deleted INTEGER DEFAULT 0, deleted_by TEXT);
-    CREATE INDEX IF NOT EXISTS posts_handle ON posts(handle);`);
+    CREATE INDEX IF NOT EXISTS posts_handle ON posts(handle);
+    CREATE TABLE IF NOT EXISTS follows (f TEXT NOT NULL, t TEXT NOT NULL, at INTEGER, PRIMARY KEY (f, t));
+    CREATE INDEX IF NOT EXISTS follows_t ON follows(t);`);
   const q = sql => db.prepare(sql);
   const J = s => { try { return JSON.parse(s); } catch (_) { return {}; } };
 
@@ -47,7 +49,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   const HANDLE = /^[a-z0-9._]{3,30}$/;
   const clean = (v, n) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f<>]/g, '').slice(0, n);
   const okUrl = u => typeof u === 'string' && (/^\/u\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(u) || /^\/img\/[a-z0-9_]+\.(jpg|png|svg)$/.test(u));
-  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', cur: d.cur, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
+  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
   const postOut = r => ({ ...J(r.data), id: isNaN(+r.id) ? r.id : +r.id, s: r.handle, at: r.at, synced: 1 });
   const ownerOf = h => q('SELECT uid FROM stores WHERE handle=? AND banned=0').get(h);
   const reserved = h => SAMPLE_HANDLES.includes(h) || /^(admin|myboutki|support|help|api|www|root)$/.test(h);
@@ -100,6 +102,28 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(h)) }, origin), true;
     }
     let m;
+    // ---------- follows ----------
+    if (p === '/api/follows' && req.method === 'GET') {
+      const h = String(url.searchParams.get('h') || '').toLowerCase();
+      if (!HANDLE.test(h)) return json(res, 400, { error: 'Bad handle' }, origin), true;
+      const followers = q("SELECT f.f h FROM follows f LEFT JOIN stores s ON s.handle=f.f WHERE f.t=? AND COALESCE(s.banned,0)=0 ORDER BY f.at DESC LIMIT 2000").all(h).map(r => r.h);
+      const following = q("SELECT f.t h FROM follows f LEFT JOIN stores s ON s.handle=f.t WHERE f.f=? AND COALESCE(s.banned,0)=0 ORDER BY f.at DESC LIMIT 2000").all(h).map(r => r.h);
+      return json(res, 200, { followers, following }, origin), true;
+    }
+    if ((m = /^\/api\/follows\/([a-z0-9._]+)$/.exec(p)) && (req.method === 'PUT' || req.method === 'DELETE')) {
+      const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      const from = String(url.searchParams.get('from') || '').toLowerCase(), remove = url.searchParams.get('remove') === '1';
+      const own = q('SELECT 1 FROM stores WHERE handle=? AND uid=?').get(from, u.uid);
+      if (!own) return json(res, 403, { error: 'Not your store' }, origin), true;
+      if (remove) { // remove one of my followers: m[1] follows `from`
+        q('DELETE FROM follows WHERE f=? AND t=?').run(m[1], from);
+      } else if (req.method === 'PUT') {
+        if (m[1] === from || !HANDLE.test(m[1])) return json(res, 400, { error: 'Can\'t follow that' }, origin), true;
+        if (q('SELECT COUNT(*) n FROM follows WHERE f=?').get(from).n >= 7500) return json(res, 400, { error: 'Following limit reached' }, origin), true;
+        q('INSERT OR IGNORE INTO follows(f,t,at) VALUES(?,?,?)').run(from, m[1], Date.now());
+      } else q('DELETE FROM follows WHERE f=? AND t=?').run(from, m[1]);
+      return json(res, 200, { ok: true }, origin), true;
+    }
     if ((m = /^\/api\/stores\/([a-z0-9._]+)$/.exec(p)) && req.method === 'PUT') {
       const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
       const r = q('SELECT * FROM stores WHERE handle=?').get(m[1]);
@@ -107,7 +131,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       const b = await readBody(req), d = sanitizeStore(b, J(r.data)), nh = String(b.handle || m[1]).toLowerCase(), now = Date.now();
       if (nh !== m[1]) {
         if (!HANDLE.test(nh) || reserved(nh) || q('SELECT 1 FROM stores WHERE handle=?').get(nh)) return json(res, 409, { error: 'That username is taken' }, origin), true;
-        db.exec('BEGIN'); try { q('UPDATE stores SET handle=?,data=?,updated=? WHERE handle=?').run(nh, JSON.stringify(d), now, m[1]); q('UPDATE posts SET handle=? WHERE handle=?').run(nh, m[1]); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
+        db.exec('BEGIN'); try { q('UPDATE stores SET handle=?,data=?,updated=? WHERE handle=?').run(nh, JSON.stringify(d), now, m[1]); q('UPDATE posts SET handle=? WHERE handle=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET f=? WHERE f=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET t=? WHERE t=?').run(nh, m[1]); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
       } else q('UPDATE stores SET data=?,updated=? WHERE handle=?').run(JSON.stringify(d), now, m[1]);
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(nh)) }, origin), true;
     }

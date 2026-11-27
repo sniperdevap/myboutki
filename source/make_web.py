@@ -159,7 +159,7 @@ async function fbToken(){try{const {auth}=await fbLoad();if(auth.authStateReady)
 async function api(method,path,body,raw){const tok=await fbToken();if(!tok)throw Object.assign(new Error('signin'),{code:401});const r=await fetch(API+path,{method,headers:{Authorization:'Bearer '+tok,...(raw?{'Content-Type':raw.type||'image/jpeg'}:{'Content-Type':'application/json'})},body:raw||(body?JSON.stringify(body):undefined)});let j=null;try{j=await r.json()}catch(_){}if(!r.ok)throw Object.assign(new Error((j&&j.error)||('Error '+r.status)),{code:r.status,j});return j}
 async function upImg(u){if(typeof u!=='string')return null;if(/^\/(u|img)\//.test(u))return u;if(u.startsWith('blob:')){const b=await (await fetch(u)).blob();const j=await api('POST','/api/upload',null,b);return j.url}return null}
 const isMine=h=>Object.values(REG).some(r=>r.handle===h&&r.uid&&r.uid===SYNC.uid);
-function srvStore(s){const ex=Object.values(REG).find(r=>r.handle===s.handle);if(ex&&ex.uid&&ex.uid===SYNC.uid)return ex;const r=ex||{};Object.assign(r,{handle:s.handle,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur,ver:s.ver&&s.ver.status==='active'?{...s.ver}:r.ver&&r.ver.status!=='active'?r.ver:null,srv:1});if(!ex){r.id='srv:'+s.handle;r.email='srv:'+s.handle;REG[r.id]=r}return r}
+function srvStore(s){const ex=Object.values(REG).find(r=>r.handle===s.handle);if(ex&&ex.uid&&ex.uid===SYNC.uid)return ex;const r=ex||{};Object.assign(r,{handle:s.handle,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur,fc:s.fc,fg:s.fg,ver:s.ver&&s.ver.status==='active'?{...s.ver}:r.ver&&r.ver.status!=='active'?r.ver:null,srv:1});if(!ex){r.id='srv:'+s.handle;r.email='srv:'+s.handle;REG[r.id]=r}return r}
 async function syncPull(){try{const r=await fetch(API+'/api/feed',{cache:'no-store'});const j=await r.json();if(!j||!j.posts)return;SYNC.lastPull=Date.now();
 const keep=new Set();(j.stores||[]).forEach(s=>{SRV_TAKEN.add(s.handle);srvStore(s)});
 for(const sp of j.posts){keep.add(String(sp.id));if(isMine(sp.s))continue;const x=P.find(p=>String(p.id)===String(sp.id));if(x)Object.assign(x,sp,{remote:1,cm:x.cm||[],l:x.l||0});else P.push({...sp,remote:1,cm:[],l:0})}
@@ -167,10 +167,10 @@ for(let i=P.length-1;i>=0;i--){const x=P[i];if(x.remote&&!keep.has(String(x.id))
 if(S.wantPost&&P.some(p=>p.id===S.wantPost)){S.stack=[{k:'detail',id:S.wantPost}];S.wantPost=0;render();return}if(S.wantShop&&P.some(p=>p.s===S.wantShop)){S.stack=[{k:'seller',s:S.wantShop}];S.wantShop=0;render();return}if(S.stage==='none'&&!document.activeElement?.matches('input,textarea'))render(true)}catch(_){}}
 async function syncMe(){const j=await api('GET','/api/me');SYNC.email=j.user.email;SYNC.uid=j.user.uid;
 for(const s of j.stores){let r=Object.values(REG).find(x=>x.handle===s.handle&&x.email===SYNC.email);if(!r){r=Object.values(REG).find(x=>x.handle===s.handle)||{};if(r.id)delete REG[r.id];r.id=storesOf(SYNC.email).length?SYNC.email+'#'+s.handle:SYNC.email;REG[r.id]=r}
-Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
+Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',fc:s.fc,fg:s.fg,srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
 const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(rm.has(String(P[i].id))){P.splice(i,1)}}
 for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
-P.sort((a,b)=>b.at-a.at);return j}
+P.sort((a,b)=>b.at-a.at);fwInit();return j}
 const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
 const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp,x.cur,x.po]);
 function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
@@ -186,6 +186,10 @@ for(const x of P.filter(p=>hs.has(p.s))){if(x.imgs&&x.imgs.some(u=>typeof u==='s
  try{const imgs=[];for(const u of x.imgs||[]){const v=await upImg(u);if(v)imgs.push(v)}if(!imgs.length)continue;const j=await api('PUT','/api/posts/'+x.id,{s:x.s,h:x.h,d:x.d,p:x.p,cur:x.cur,po:x.po,c:x.c,imgs,ic:x.ic,bg:x.bg,fg:x.fg,sold:!!x.sold,soldAt:x.soldAt,soldPrice:x.soldPrice,rp:x.rp,at:x.at});x.imgs=imgs;x.synced=1;x._sh=postSig(x);done.add(String(x.id))}catch(e){if(e.code===410){const i=P.indexOf(x);if(i>=0)P.splice(i,1);toast('One of your posts was removed by myboutki')}}}
 for(const id of [...done]){const x=P.find(p=>String(p.id)===id);if(!x||(!hs.has(x.s)&&!isMine(x.s))){if(!x){try{await api('DELETE','/api/posts/'+id)}catch(_){}}done.delete(id)}}
 localStorage.setItem('mb_synced',JSON.stringify([...done]));queueSave()}catch(_){}finally{SYNC.busy=false}}
+// follows (followers / following) on the server
+async function fwInit(){const h=me();if(!h||!SYNC.uid||!isMine(h))return;try{const j=await (await fetch(API+'/api/follows?h='+encodeURIComponent(h),{cache:'no-store'})).json();if(!j||!j.following)return;const srv=new Set(j.following),k='mb_fwp_'+h;
+if(!localStorage.getItem(k)&&(!S.followOf||S.followOf===h)){for(const t of [...S.follow])if(!srv.has(t)&&t!==h){try{await api('PUT','/api/follows/'+encodeURIComponent(t)+'?from='+encodeURIComponent(h));srv.add(t)}catch(_){}}localStorage.setItem(k,'1')}
+if(me()!==h)return;S.follow=srv;S.followOf=h;FW[h]={followers:j.followers||[],following:[...srv]};render(true)}catch(_){}}
 async function syncStart(){const tok=await fbToken();if(!tok)return;try{await syncMe();SYNC.on=true;render(true);queueSync()}catch(_){}}
 setInterval(()=>{if(document.visibilityState==='visible'){syncPull();if(SYNC.uid)syncMe().then(()=>render(true)).catch(()=>{})}},60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-SYNC.lastPull>15000)syncPull()});
@@ -201,6 +205,11 @@ R("case 'finish':{","case 'finish':{if(SYNC.uid&&S._hOk!==S.un){const v=S.un;if(
 R("const u={name:S.pending.name,email:S.pending.email,handle:S.un,","const u={uid:SYNC.uid||undefined,name:S.pending.name,email:S.pending.email,handle:S.un,")
 # logout: also stop syncing
 R("case 'logout':fbOut();S.menu=false;","case 'logout':fbOut();SYNC.uid='';SYNC.email='';S.menu=false;")
+# follows: load lists, follow/unfollow/remove on the server
+R("function fwLoad(h){}","function fwLoad(h){fetch(API+'/api/follows?h='+encodeURIComponent(h),{cache:'no-store'}).then(r=>r.json()).then(j=>{if(j&&j.followers){FW[h]=j;if(h===me()&&isMine(h)){j.following=[...S.follow]}render(true)}}).catch(()=>{})}")
+R("function fwPush(t,on){}","function fwPush(t,on){const h=me();if(!h||!SYNC.uid||!isMine(h))return;api(on?'PUT':'DELETE','/api/follows/'+encodeURIComponent(t)+'?from='+encodeURIComponent(h)).catch(()=>{})}")
+R("function fwRemove(f){}","function fwRemove(f){const h=me();if(!h||!SYNC.uid||!isMine(h))return;api('DELETE','/api/follows/'+encodeURIComponent(f)+'?from='+encodeURIComponent(h)+'&remove=1').catch(()=>{})}")
+R("if(r&&(!S.user||regKey(r)!==regKey(S.user))){S.user=r;","if(r&&(!S.user||regKey(r)!==regKey(S.user))){S.user=r;if(isMine(r.handle)){S.follow=new Set();S.followOf=r.handle;setTimeout(fwInit,0)}")
 # admin switch to hide the sample shops
 R("function applyCfg(c){if(!c||!c.verified)return;","function applyCfg(c){if(!c||!c.verified)return;if(c.showSamples===false){for(let i=P.length-1;i>=0;i--)if(P[i].id<100&&!P[i].remote&&['noor.abayas','cheetah.watches','q8.menswear','thepinkstore'].includes(P[i].s))P.splice(i,1)}")
 
