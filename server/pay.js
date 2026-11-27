@@ -19,6 +19,8 @@ const hashPass = pw => { const salt = crypto.randomBytes(16).toString('hex'); re
 const API = process.env.MF_API_URL || 'https://api.myfatoorah.com';
 const KEY = process.env.MF_API_KEY || '';
 const SITE = process.env.SITE_URL || 'https://myboutki.com';
+const SESSION_JS = process.env.MF_SESSION_JS || 'https://portal.myfatoorah.com/sessions/v1/session.js';
+const SESS = new Map();
 const makeDb = require('./db.js');
 const PORT = +process.env.PORT || 8080;
 
@@ -112,10 +114,10 @@ http.createServer(async (req, res) => {
     if (url.pathname === '/api/pay/products' && req.method === 'GET')
       return json(res, 200, Object.fromEntries(Object.entries(PRODUCTS).map(([k, p]) => [k, { name: p.name, usd: p.usd, kwd: p.kwd }])), origin);
 
-    if (url.pathname === '/api/pay/create' && req.method === 'POST') {
+    if ((url.pathname === '/api/pay/create' || url.pathname === '/api/pay/session') && req.method === 'POST') {
       const ip = req.headers['x-real-ip'] || req.socket.remoteAddress;
       if (limited(ip)) return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }, origin);
-      const b = await readBody(req);
+      const b = await readBody(req), embedded = url.pathname === '/api/pay/session';
       let p = PRODUCTS[b.product], extra = [];
       if (b.product === 'boost') {
         const daily = Math.round(+b.daily), days = +b.days;
@@ -132,8 +134,30 @@ http.createServer(async (req, res) => {
       const post = String(b.post || '').replace(/[^0-9a-zA-Z_-]/g, '').slice(0, 40);
       if (p.post && !post) return json(res, 400, { error: 'Missing post' }, origin);
       const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email || '') ? clean(b.email, 100) : undefined;
+      const order = { Amount: p.kwd, Currency: 'KWD', ExternalIdentifier: [b.product, handle, p.post ? post : '', ...extra].join('|') };
+      if (embedded) {
+        // Payment form shown inside our own page (no MyFatoorah invoice page)
+        const body = { PaymentMode: 'COMPLETE_PAYMENT', OperationType: 'PAY', Order: order,
+          Customer: { Name: clean(b.name, 60) || handle, Email: email, Reference: handle },
+          IntegrationUrls: { Redirection: `${SITE}/pay/return` },
+          Language: b.lang === 'ar' ? 'AR' : 'EN',
+          SupportedPaymentMethods: (process.env.PAY_METHODS || 'card,applepay,googlepay').split(',') };
+        let r = await mf('POST', '/v3/sessions', body);
+        if (!r.ok || !r.j || !r.j.Data || !r.j.Data.SessionId) {
+          console.error('session failed', r.status, JSON.stringify(r.j && (r.j.Message || r.j.ValidationErrors)));
+          r = await mf('POST', '/v3/sessions', { PaymentMode: 'COMPLETE_PAYMENT', Order: order });
+        }
+        if (!r.ok || !r.j || !r.j.Data || !r.j.Data.SessionId) {
+          console.error('session failed (minimal)', r.status, JSON.stringify(r.j && (r.j.Message || r.j.ValidationErrors)));
+          return json(res, 502, { error: 'Payment service unavailable. Please try again.' }, origin);
+        }
+        const d = r.j.Data;
+        SESS.set(d.SessionId, { key: d.EncryptionKey || '', at: Date.now() });
+        for (const [k, v] of SESS) if (Date.now() - v.at > 3 * 3600e3) SESS.delete(k);
+        return json(res, 200, { sessionId: d.SessionId, script: SESSION_JS, amount: p.kwd, currency: 'KWD', usd: p.usd, name: p.name }, origin);
+      }
       const r = await mf('POST', '/v3/payments', {
-        Order: { Amount: p.kwd, Currency: 'KWD', ExternalIdentifier: [b.product, handle, p.post ? post : '', ...extra].join('|') },
+        Order: order,
         Customer: { Name: clean(b.name, 60) || handle, Email: email, Reference: handle },
         IntegrationUrls: { Redirection: `${SITE}/pay/return` },
         Language: b.lang === 'ar' ? 'AR' : 'EN',
@@ -148,9 +172,28 @@ http.createServer(async (req, res) => {
       return json(res, 200, { url: r.j.Data.PaymentURL, invoiceId: r.j.Data.InvoiceId }, origin);
     }
 
+    if (url.pathname === '/api/pay/session-result' && req.method === 'POST') {
+      const b = await readBody(req), sid = String(b.sessionId || ''), ss = SESS.get(sid);
+      let id = String(b.paymentId || '').replace(/[^0-9]/g, '');
+      if (!id && ss && ss.key && b.paymentData) {
+        try {
+          const k = Buffer.from(String(ss.key).slice(0, 16), 'utf8');
+          const dc = crypto.createDecipheriv('aes-128-cbc', k, k);
+          const txt = Buffer.concat([dc.update(Buffer.from(String(b.paymentData), 'base64')), dc.final()]).toString('utf8');
+          const pd = JSON.parse(txt), t = pd.Transaction || pd.transaction || {};
+          id = String(t.PaymentId || t.paymentId || pd.PaymentId || '').replace(/[^0-9]/g, '');
+        } catch (e) { console.error('decrypt', e.message); }
+      }
+      if (!/^[0-9]{6,40}$/.test(id)) return json(res, 400, { paid: false, error: 'Could not confirm the payment yet' }, origin);
+      url.searchParams.set('paymentId', id);
+      return payStatus(id);
+    }
     if (url.pathname === '/api/pay/status' && req.method === 'GET') {
       const id = url.searchParams.get('paymentId') || '';
       if (!/^[0-9]{6,40}$/.test(id)) return json(res, 400, { error: 'Bad payment id' }, origin);
+      return payStatus(id);
+    }
+    async function payStatus(id) {
       const r = await mf('GET', '/v3/payments/' + id);
       if (!r.ok || !r.j.Data) return json(res, 404, { paid: false, error: 'Payment not found' }, origin);
       const d = r.j.Data, inv = d.Invoice || {}, tr = d.Transaction || {};
