@@ -124,6 +124,29 @@ R("let i18nQ=0;","document.documentElement.lang=S.lang;let i18nQ=0;") if "let i1
 open('/tmp/app_web.html','w').write(s)
 print('ok',len(s))
 
+# 6. REAL Google sign-in with Firebase Auth (website only)
+R("case 'google':S.stage='pick';render();break;","case 'google':fbGoogle(el);break;")
+R("case 'logout':S.menu=false;S.user=null;","case 'logout':fbOut();S.menu=false;S.user=null;")
+R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:"myboutki.firebaseapp.com",projectId:"myboutki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
+const FBV='11.0.2';let fbP=null;
+function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
+function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
+if(REG[em]){S.user=REG[em];S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
+else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=0;S.stage='setup';render()}}
+async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.disabled=true}
+try{const {U,auth}=await fbLoad(),pv=new U.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
+let r;try{r=await U.signInWithPopup(auth,pv)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||'')){await U.signInWithRedirect(auth,pv);return}throw e}
+fbAccount(r.user)}catch(e){if(!/popup-closed|cancelled-popup/.test(e&&e.code||''))toast("Couldn't sign in with Google. Please try again.")}finally{if(el&&el.isConnected){el.disabled=false;el.innerHTML=t}}}
+function fbOut(){fbLoad().then(({U,auth})=>U.signOut(auth)).catch(()=>{})}
+async function fbRedirectResult(){if(S.user)return;try{const {U,auth}=await fbLoad(),r=await U.getRedirectResult(auth);if(r&&r.user)fbAccount(r.user)}catch(_){}}
+async function boot(){""")
+R("applyLang();render();payReturn();","applyLang();render();payReturn();if(sessionStorage.getItem('mb_fbr')!=='0')fbRedirectResult();")
+# finish: remember the Google uid on the account
+R("case 'finish':{","case 'finish':{if(S.pending&&S.pending.uid)S.pendingUid=S.pending.uid;")
+m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
+d.update({"Couldn't sign in with Google. Please try again.":"تعذّر تسجيل الدخول عبر Google. حاول مرة أخرى."})
+s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
+
 # ---- write pages into the Astro public folder with SEO heads
 import html
 def head(lang):
