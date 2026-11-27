@@ -102,6 +102,19 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(h)) }, origin), true;
     }
     let m;
+    // sitemap of shop items; Google Search boosts are listed first with today's date so Google re-reads them daily
+    if (p === '/api/sitemap.xml' && req.method === 'GET') {
+      const now = Date.now(), day = new Date().toISOString().slice(0, 10), esc = v => String(v).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
+      const rows = q('SELECT p.* FROM posts p JOIN stores s ON s.handle=p.handle WHERE p.deleted=0 AND s.banned=0 ORDER BY p.at DESC LIMIT 5000').all().map(r => ({ r, d: J(r.data) }));
+      const g = x => x.d.top && x.d.top.google && x.d.top.google.until > now;
+      rows.sort((a, b) => g(b) - g(a));
+      const stores = q('SELECT handle, updated FROM stores WHERE banned=0').all();
+      const urls = rows.map(({ r, d }) => `<url><loc>https://myboutki.com/p/${esc(r.id)}</loc><lastmod>${g({ d }) ? day : new Date(r.updated || r.at || now).toISOString().slice(0, 10)}</lastmod>${g({ d }) ? '<changefreq>daily</changefreq><priority>1.0</priority>' : '<priority>0.6</priority>'}${d.imgs && d.imgs[0] && /^\/u\//.test(d.imgs[0]) ? `<image:image><image:loc>https://myboutki.com${esc(d.imgs[0])}</image:loc></image:image>` : ''}</url>`)
+        .concat(stores.map(s => `<url><loc>https://myboutki.com/@${esc(s.handle)}</loc><lastmod>${new Date(s.updated || now).toISOString().slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
+      res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+      res.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${urls.join('')}</urlset>`);
+      return true;
+    }
     // ---------- follows ----------
     if (p === '/api/follows' && req.method === 'GET') {
       const h = String(url.searchParams.get('h') || '').toLowerCase();

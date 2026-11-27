@@ -170,7 +170,7 @@ async function syncMe(){const j=await api('GET','/api/me');SYNC.email=j.user.ema
 for(const s of j.stores){let r=Object.values(REG).find(x=>x.handle===s.handle&&x.email===SYNC.email);if(!r){r=Object.values(REG).find(x=>x.handle===s.handle)||{};if(r.id)delete REG[r.id];r.id=storesOf(SYNC.email).length?SYNC.email+'#'+s.handle:SYNC.email;REG[r.id]=r}
 Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',fc:s.fc,fg:s.fg,srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
 const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(rm.has(String(P[i].id))){P.splice(i,1)}}
-for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
+for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;if(sp.top)x.top=sp.top;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
 P.sort((a,b)=>b.at-a.at);fwInit();return j}
 const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
 const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp,x.cur,x.po]);
@@ -322,5 +322,5 @@ for u,f,pr,img in urls:
     if u in ('/about/','/ar/about/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/about/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/about/"/>'
     sm+=f'<url><loc>{SITE}{html.escape(u)}</loc>{alt}{f"<image:image><image:loc>{img}</image:loc></image:image>" if img else ""}<changefreq>{f}</changefreq><priority>{pr}</priority></url>\n'
 open(os.path.join(WEB,'public/sitemap.xml'),'w').write(sm+'</urlset>\n')
-open(os.path.join(WEB,'public/robots.txt'),'w').write('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /pay/\n\nSitemap: https://myboutki.com/sitemap.xml\n')
+open(os.path.join(WEB,'public/robots.txt'),'w').write('User-agent: *\nAllow: /\nDisallow: /admin/\nAllow: /api/sitemap.xml\nDisallow: /api/\nDisallow: /pay/\n\nSitemap: https://myboutki.com/sitemap.xml\nSitemap: https://myboutki.com/api/sitemap.xml\n')
 print('pages written')
