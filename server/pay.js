@@ -169,6 +169,22 @@ http.createServer(async (req, res) => {
       return json(res, 204, null, origin);
     }
 
+    // per-shop numbers for the seller's own dashboard (counts only, nothing personal)
+    if (url.pathname === '/api/shop-stats' && req.method === 'GET') {
+      const shop = clean(url.searchParams.get('shop'), 40).toLowerCase();
+      if (!/^[a-z0-9._]{2,40}$/.test(shop)) return json(res, 400, { error: 'Bad shop' }, origin);
+      const days = Math.min(90, Math.max(7, +url.searchParams.get('days') || 30)), since = Date.now() - days * 864e5;
+      const ev = readLog('events.jsonl', since).filter(e => e.s === shop);
+      const byDay = {}; for (let i = days - 1; i >= 0; i--) byDay[new Date(Date.now() - i * 864e5).toISOString().slice(0, 10)] = { views: 0, visitors: new Set() };
+      for (const e of ev) { const d = new Date(e.t).toISOString().slice(0, 10); if (byDay[d]) { if (e.e === 'item' || e.e === 'shop') byDay[d].views++; byDay[d].visitors.add(e.v); } }
+      const items = {}; for (const e of ev) if (e.e === 'item') items[e.k] = (items[e.k] || 0) + 1;
+      const taps = k => ev.filter(e => e.e === 'tap' && (Array.isArray(k) ? k.includes(e.k) : e.k === k)).length;
+      return json(res, 200, { days, visitors: new Set(ev.map(e => e.v)).size, itemViews: ev.filter(e => e.e === 'item').length, shopVisits: ev.filter(e => e.e === 'shop').length,
+        whatsapp: taps(['wa', 'wact', 'waask', 'shwa']), carts: taps('add'), shares: taps(['share', 'igopen', 'copylink']), likes: taps('like'),
+        daily: Object.entries(byDay).map(([d, o]) => ({ d, views: o.views, visitors: o.visitors.size })),
+        top: Object.entries(items).sort((a, z) => z[1] - a[1]).slice(0, 5) }, origin);
+    }
+
     // ---- admin (login required) ----
     if (url.pathname === '/api/admin/login' && req.method === 'POST') {
       const ip = req.headers['x-real-ip'] || req.socket.remoteAddress, now = Date.now(), a = (loginTries.get(ip) || []).filter(t => now - t < 9e5);
