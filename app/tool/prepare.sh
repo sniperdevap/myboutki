@@ -46,7 +46,8 @@ import sys,re
 p=sys.argv[1];s=open(p).read()
 if 'upload.jks' in s or 'keystoreProperties' in s: sys.exit()
 if p.endswith('.kts'):
-    s=s.replace('android {','''val keystoreProperties = java.util.Properties().apply { val f = rootProject.file("key.properties"); if (f.exists()) load(java.io.FileInputStream(f)) }
+    s='import java.util.Properties\nimport java.io.FileInputStream\n'+s
+    s=s.replace('android {','''val keystoreProperties = Properties().apply { val f = rootProject.file("key.properties"); if (f.exists()) FileInputStream(f).use { load(it) } }
 android {''',1)
     s=s.replace('buildTypes {','''signingConfigs { create("release") { keyAlias = keystoreProperties["keyAlias"] as String?; keyPassword = keystoreProperties["keyPassword"] as String?; storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }; storePassword = keystoreProperties["storePassword"] as String? } }
     buildTypes {''',1)
