@@ -80,7 +80,7 @@ const json = (res, code, body, origin) => {
   const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
   if (origin && (ORIGINS.has(origin) || /^https:\/\/[a-z0-9-]+\.claudeusercontent\.com$/.test(origin))) {
     h['Access-Control-Allow-Origin'] = origin; h['Vary'] = 'Origin';
-    h['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'; h['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+    h['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'; h['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
   }
   res.writeHead(code, h); res.end(body === null ? '' : JSON.stringify(body));
 };

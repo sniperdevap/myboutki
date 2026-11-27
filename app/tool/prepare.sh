@@ -16,6 +16,7 @@ sed -i.bak -E 's/minSdk *=? *flutter\.minSdkVersion/minSdk = 23/' "$G"
 M=android/app/src/main/AndroidManifest.xml
 sed -i.bak -E 's/android:label="[^"]*"/android:label="myboutiki"/' "$M"
 grep -q 'android.permission.INTERNET' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$M"
+grep -q 'RECORD_AUDIO' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>\n    <application#' "$M"
 
 # Release signing with the Play upload key (only when the key is provided as CI secrets)
 if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
@@ -57,6 +58,7 @@ p=sys.argv[1];d=plistlib.load(open(p,'rb'))
 d['CFBundleDisplayName']='myboutiki'; d['CFBundleName']='myboutiki'
 d['NSPhotoLibraryUsageDescription']='myboutiki uses your photos so you can add pictures of the items you sell.'
 d['NSCameraUsageDescription']='myboutiki uses the camera so you can take photos of the items you sell.'
+d['NSMicrophoneUsageDescription']='myboutiki uses the microphone so you can send voice messages in Inbox.'
 d['LSApplicationQueriesSchemes']=['whatsapp','tel','mailto','instagram','https']
 d['ITSAppUsesNonExemptEncryption']=False
 d['CFBundleLocalizations']=['en','ar']

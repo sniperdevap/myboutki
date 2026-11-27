@@ -21,6 +21,8 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
     CREATE INDEX IF NOT EXISTS follows_t ON follows(t);
     CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, f TEXT NOT NULL, t TEXT NOT NULL, text TEXT NOT NULL, pid TEXT, at INTEGER NOT NULL, hid_f INTEGER DEFAULT 0, hid_t INTEGER DEFAULT 0);
     CREATE INDEX IF NOT EXISTS messages_f ON messages(f, at); CREATE INDEX IF NOT EXISTS messages_t ON messages(t, at);`);
+  for (const c of ['kind TEXT', 'media TEXT', 'dur INTEGER', 'edited INTEGER DEFAULT 0', 'del INTEGER DEFAULT 0', 'upd INTEGER DEFAULT 0']) { try { db.exec('ALTER TABLE messages ADD COLUMN ' + c); } catch (_) {} }
+  try { db.exec('CREATE INDEX IF NOT EXISTS messages_upd ON messages(upd)'); } catch (_) {}
   const q = sql => db.prepare(sql);
   const LOGIN_HITS = new Map(), FB_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo';
   const J = s => { try { return JSON.parse(s); } catch (_) { return {}; } };
@@ -52,7 +54,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
   const HANDLE = /^[a-z0-9._]{3,30}$/;
   const clean = (v, n) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f<>]/g, '').slice(0, n);
   const okUrl = u => typeof u === 'string' && (/^\/u\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(u) || /^\/img\/[a-z0-9_]+\.(jpg|png|svg)$/.test(u));
-  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
+  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', calls: d.calls !== false, cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
   const postOut = r => ({ ...J(r.data), id: isNaN(+r.id) ? r.id : +r.id, s: r.handle, at: r.at, synced: 1 });
   const ownerOf = h => q('SELECT uid FROM stores WHERE handle=? AND banned=0').get(h);
   const reserved = h => SAMPLE_HANDLES.includes(h) || /^(admin|myboutiki|myboutki|support|help|api|www|root)$/.test(h);
@@ -61,7 +63,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
     const links = (Array.isArray(b.links) ? b.links : d.links || []).slice(0, 4).map(l => ({ u: /^https?:\/\//.test(l.u || '') ? clean(l.u, 300) : '', t: clean(l.t, 30) })).filter(l => l.u);
     const hl = (Array.isArray(b.hl) ? b.hl : d.hl || []).slice(0, 30).map(x => ({ id: +x.id || Date.now(), name: clean(x.name, 15), cover: okUrl(x.cover) ? x.cover : null, items: (Array.isArray(x.items) ? x.items : []).slice(0, 100).map(String) }));
     return { ...d, name: clean(b.name ?? d.name, 60), bio: clean(b.bio ?? d.bio, 150), avatar: b.avatar === null ? null : okUrl(b.avatar) ? b.avatar : d.avatar || null, links, hl,
-      k: /^(KW|SA|AE|BH|QA|OM)$/.test(b.k) ? b.k : d.k || 'KW', phone: clean(b.phone ?? d.phone, 24), cur: /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || 'KWD' };
+      k: /^(KW|SA|AE|BH|QA|OM)$/.test(b.k) ? b.k : d.k || 'KW', phone: clean(b.phone ?? d.phone, 24), calls: typeof b.calls === 'boolean' ? b.calls : d.calls !== false, cur: /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || 'KWD' };
   }
   function sanitizePost(b, d = {}) {
     const imgs = (Array.isArray(b.imgs) ? b.imgs : d.imgs || []).filter(okUrl).slice(0, 10);
@@ -135,18 +137,30 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
     if (p === '/api/messages' && req.method === 'GET') {
       const h = String(url.searchParams.get('h') || '').toLowerCase(), since = Math.max(0, +url.searchParams.get('since') || 0);
       if (!(await mine(h))) return json(res, 401, { error: 'Please sign in again' }, origin), true;
-      const rows = q('SELECT id,f,t,text,pid,at FROM messages WHERE ((f=? AND hid_f=0) OR (t=? AND hid_t=0)) AND id>? ORDER BY id LIMIT 1000').all(h, h, since);
-      return json(res, 200, { messages: rows }, origin), true;
+      const su = Math.max(0, +url.searchParams.get('su') || 0);
+      const rows = q('SELECT id,f,t,text,pid,at,kind,media,dur,edited,del,upd FROM messages WHERE ((f=? AND hid_f=0) OR (t=? AND hid_t=0)) AND (id>? OR upd>?) ORDER BY id LIMIT 1000').all(h, h, since, su);
+      return json(res, 200, { messages: rows, now: Date.now() }, origin), true;
     }
     if (p === '/api/messages' && req.method === 'POST') {
       const b = await readBody(req), f = String(b.from || '').toLowerCase(), t = String(b.to || '').toLowerCase(), text = clean(b.text, 2000).trim();
+      const kind = b.kind === 'img' || b.kind === 'voice' ? b.kind : null, media = kind && /^\/u\/[a-f0-9]{32}\.(jpg|png|webp|webm|ogg|m4a|mp4)$/.test(String(b.media || '')) ? String(b.media) : null, dur = kind === 'voice' ? Math.max(1, Math.min(600, Math.round(+b.dur || 1))) : null;
       const u = await mine(f); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
-      if (!text || !HANDLE.test(t) || t === f) return json(res, 400, { error: 'Message not sent' }, origin), true;
+      if ((kind ? !media : !text) || !HANDLE.test(t) || t === f) return json(res, 400, { error: 'Message not sent' }, origin), true;
       if (!q('SELECT 1 FROM stores WHERE handle=? AND banned=0').get(t)) return json(res, 404, { error: 'This shop can only be reached on WhatsApp' }, origin), true;
       if (q('SELECT COUNT(*) n FROM messages WHERE f=? AND at>?').get(f, Date.now() - 60e3).n >= 30) return json(res, 429, { error: 'Slow down a little' }, origin), true;
       const pid = b.pid ? String(b.pid).replace(/[^0-9a-zA-Z_-]/g, '').slice(0, 40) : null, at = Date.now();
-      const r = q('INSERT INTO messages(f,t,text,pid,at) VALUES(?,?,?,?,?)').run(f, t, text, pid, at);
-      return json(res, 200, { ok: true, message: { id: Number(r.lastInsertRowid), f, t, text, pid, at } }, origin), true;
+      const r = q('INSERT INTO messages(f,t,text,pid,at,kind,media,dur) VALUES(?,?,?,?,?,?,?,?)').run(f, t, kind ? '' : text, pid, at, kind, media, dur);
+      return json(res, 200, { ok: true, message: { id: Number(r.lastInsertRowid), f, t, text: kind ? '' : text, pid, at, kind, media, dur } }, origin), true;
+    }
+    // edit or delete your own message (delete removes it for both sides)
+    if ((m = /^\/api\/messages\/([0-9]{1,15})$/.exec(p)) && (req.method === 'PATCH' || req.method === 'DELETE')) {
+      const b = req.method === 'PATCH' ? await readBody(req) : {}, h = String(b.h || url.searchParams.get('h') || '').toLowerCase();
+      if (!(await mine(h))) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      const r = q('SELECT * FROM messages WHERE id=? AND f=?').get(+m[1], h); if (!r || r.del) return json(res, 404, { error: 'Message not found' }, origin), true;
+      const now = Date.now();
+      if (req.method === 'DELETE') { q("UPDATE messages SET del=1,text='',media=NULL,upd=? WHERE id=?").run(now, r.id); return json(res, 200, { ok: true }, origin), true; }
+      const text = clean(b.text, 2000).trim(); if (!text || r.kind) return json(res, 400, { error: 'Message not changed' }, origin), true;
+      q('UPDATE messages SET text=?,edited=1,upd=? WHERE id=?').run(text, now, r.id); return json(res, 200, { ok: true }, origin), true;
     }
     if (p === '/api/messages/clear' && req.method === 'POST') {
       const b = await readBody(req), h = String(b.h || '').toLowerCase();
@@ -224,8 +238,10 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
     if (p === '/api/upload' && req.method === 'POST') {
       const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
       const buf = await readRaw(req, 6 * 1024 * 1024);
-      const ext = buf[0] === 0xff && buf[1] === 0xd8 ? 'jpg' : buf.slice(0, 8).toString('hex') === '89504e470d0a1a0a' ? 'png' : buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP' ? 'webp' : null;
-      if (!ext) return json(res, 400, { error: 'Photos must be JPG, PNG or WebP' }, origin), true;
+      const audio = url.searchParams.get('kind') === 'voice';
+      const ext = audio ? (buf.slice(0, 4).toString('hex') === '1a45dfa3' ? 'webm' : buf.slice(0, 4).toString() === 'OggS' ? 'ogg' : buf.slice(4, 8).toString() === 'ftyp' ? 'm4a' : null)
+        : buf[0] === 0xff && buf[1] === 0xd8 ? 'jpg' : buf.slice(0, 8).toString('hex') === '89504e470d0a1a0a' ? 'png' : buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP' ? 'webp' : null;
+      if (!ext) return json(res, 400, { error: audio ? 'Voice message format not supported' : 'Photos must be JPG, PNG or WebP' }, origin), true;
       const name = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 32) + '.' + ext;
       const f = path.join(IMG, name); if (!fs.existsSync(f)) fs.writeFileSync(f, buf, { mode: 0o644 });
       return json(res, 200, { url: '/u/' + name }, origin), true;

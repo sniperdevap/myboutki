@@ -15,6 +15,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -68,7 +69,14 @@ class _ShellState extends State<Shell> {
     final PlatformWebViewControllerCreationParams params = WebViewPlatform.instance is WebKitWebViewPlatform
         ? WebKitWebViewControllerCreationParams(allowsInlineMediaPlayback: true, mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{})
         : const PlatformWebViewControllerCreationParams();
-    _web = WebViewController.fromPlatformCreationParams(params);
+    _web = WebViewController.fromPlatformCreationParams(params, onPermissionRequest: (req) async {
+      // microphone for voice messages in Inbox
+      if (Platform.isAndroid && req.types.contains(WebViewPermissionResourceType.microphone)) {
+        final st = await Permission.microphone.request();
+        if (!st.isGranted) { await req.deny(); return; }
+      }
+      await req.grant();
+    });
     _setup();
   }
 

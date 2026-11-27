@@ -1,5 +1,5 @@
 export const SITE = 'https://myboutiki.com';
-export const CATS = ['Bath & Body','Eyewear','Contact Lenses','Apparel','Footwear','Sports','Derma Beauty','Electronics','Home & Living','Accessories','Watches','Other'];
+export const CATS = ['Bath & Body','Eyewear','Contact Lenses','Apparel','Footwear','Sports','Derma Beauty','Electronics','Home & Living','Accessories','Watches','Perfume','Jewelry','Other'];
 export const SHOPS = {
   'noor.abayas':    { name:'Noor Abayas',     avatar:'/img/av_noor.jpg',    verified:false, bio:'Apparel shop in Kuwait\n🚚 Delivery across the Gulf\n💬 Message or WhatsApp to order' },
   'cheetah.watches':{ name:'Cheetah Watches', avatar:'/img/av_cheetah.jpg', verified:true,  bio:'Watches shop in Kuwait\n🚚 Delivery across the Gulf\n💬 Message or WhatsApp to order' },
