@@ -1,0 +1,144 @@
+---
+import Base from '../../layouts/Base.astro';
+const SITE = 'https://myboutki.com';
+const cats = ['Apparel','Accessories','Watches','Derma Beauty','Bath & Body','Eyewear','Contact Lenses','Footwear','Electronics','Home & Living','Sports','Other'];
+const countries = ['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'];
+const shots = [['/img/abaya.jpg','Black abaya with gold lace trim for sale on myboutki'],['/img/watch.jpg','Steel GMT watch listed by a verified shop'],['/img/polo.jpg','Green knit polo from a Kuwait menswear shop'],['/img/bag.jpg','Burgundy leather shoulder bag for sale']];
+const features = [
+  ['Your own shop, no rent','Open a shop profile in minutes with your logo, bio, phone and WhatsApp. No store lease, no deposit, no monthly rent.'],
+  ['Post an item in seconds','Add up to 10 photos, a price and a caption. myboutki writes the headline for you and your item goes live instantly.'],
+  ['A feed made for shopping','Buyers scroll new items like a social feed, tap a seller’s circle to see their latest pieces, and double-tap to like.'],
+  ['Search by category','Find exactly what you want across Apparel, Watches, Accessories, Derma Beauty, Electronics and more.'],
+  ['Order on WhatsApp','Buyers add items to a cart and send the seller one WhatsApp message with every item, price and link.'],
+  ['Chat, follow and save','Message sellers inside the app, follow your favourite shops, and save items to Favourites for later.'],
+  ['Verified shops','Sellers can verify their shop with a government ID and get a blue badge that builds trust and puts them first.'],
+  ['Built for the Gulf','Prices in KWD, SAR, AED, BHD, QAR and OMR, and Gulf phone numbers for every seller.'],
+];
+const faq = [
+  ['What is myboutki?','myboutki is a social media marketplace designed for sellers. Instead of renting a physical shop, sellers open a free online shop on myboutki, post their items with photos, and sell to buyers who browse, search and order easily.'],
+  ['Do I need to rent a shop to sell on myboutki?','No. myboutki replaces the need to rent a store. Your shop lives on myboutki, so you can sell from home and reach buyers across the Gulf without paying rent.'],
+  ['Is it free to sell on myboutki?','Opening a shop and posting items is free. Sellers who want the blue verified badge and top placement can choose an optional Verified plan.'],
+  ['How do buyers pay and receive items?','Buyers add items to their cart and tap Order on WhatsApp. The seller receives a message listing every item and arranges payment and delivery directly with the buyer.'],
+  ['Which countries is myboutki available in?','myboutki is launching in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.'],
+  ['What can I sell on myboutki?','Apparel and abayas, accessories, watches, derma beauty, bath and body, eyewear, contact lenses, footwear, electronics, home and living, sports and more.'],
+  ['When does myboutki launch?','myboutki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
+];
+const jsonld = [
+  { '@context':'https://schema.org','@type':'Organization','name':'myboutki','url':SITE,'logo':`${SITE}/img/favicon.png`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
+  { '@context':'https://schema.org','@type':'WebSite','name':'myboutki','url':SITE,'inLanguage':['en','ar'],'description':'A social media marketplace for sellers in the Gulf to sell online without renting a shop.'},
+  { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutki','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','description':'Open your own online shop, post items with photos and sell on WhatsApp without paying rent for a store.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':SITE},
+  { '@context':'https://schema.org','@type':'FAQPage','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
+];
+---
+<Base path="/about/" jsonld={jsonld}>
+<header class="top"><a href="/" class="brand" aria-label="myboutki home"><img src="/img/mark.svg" alt="" width="64" height="41" /><span>myboutki</span></a><nav aria-label="Sections"><a href="#why">Why myboutki</a><a href="#how">How it works</a><a href="#faq">FAQ</a><a href="/ar/about/" class="lang" hreflang="ar" lang="ar">العربية</a></nav></header>
+<main>
+  <section class="wrap hero-wrap">
+    <div class="hero">
+      <p class="eyebrow"><span class="dot"></span>Coming soon</p>
+      <h1>Sell online without renting a shop</h1>
+      <p class="lead"><strong>myboutki</strong> is a social media marketplace made for sellers. Open your own shop in minutes, post your items with photos, and let buyers across the Gulf find, save and order them on WhatsApp — no store rent, no setup costs.</p>
+      <ul class="cats" aria-label="Categories">{cats.map(c => <li>{c}</li>)}</ul>
+      <p class="where">Launching in {countries.join(' · ')}</p>
+    </div>
+    <div class="gallery" aria-label="Items on myboutki">
+      {shots.map(([src, alt], i) => <figure class={`g g${i}`}><img src={src} alt={alt} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" /></figure>)}
+    </div>
+  </section>
+
+  <section id="why" class="band soft">
+    <div class="wrap1">
+      <h2>Why pay rent for a shop?</h2>
+      <p class="sub">Renting a store means a lease, deposits and monthly bills before you sell a single item. myboutki gives every seller a dedicated place to sell online, built like the social apps people already use every day.</p>
+      <div class="compare">
+        <div class="col"><h3>Renting a shop</h3><ul><li>Monthly rent and a long lease</li><li>Deposit, decoration and staff</li><li>Only people walking past can see you</li><li>Fixed opening hours</li></ul></div>
+        <div class="col good"><h3>Selling on myboutki</h3><ul><li>Your own shop profile, no rent</li><li>Post items from your phone in seconds</li><li>Buyers across six Gulf countries can find you</li><li>Open 24 hours, orders straight to WhatsApp</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap1">
+      <h2>A social marketplace for buying and selling</h2>
+      <p class="sub">myboutki is a specific place made for items: every post is something you can buy, every profile is a shop, and every search leads to sellers near you.</p>
+      <div class="grid">{features.map(([t,d]) => <article class="feat"><h3>{t}</h3><p>{d}</p></article>)}</div>
+    </div>
+  </section>
+
+  <section id="how" class="band soft">
+    <div class="wrap1 two">
+      <div><h2>For sellers</h2><ol class="steps"><li><b>Sign in with Google</b> and pick your shop username.</li><li><b>Post your items</b> with photos, a price and a caption.</li><li><b>Get orders on WhatsApp</b> with every item listed for you.</li><li><b>Grow your shop</b> with followers, reposts and the verified badge.</li></ol></div>
+      <div><h2>For buyers</h2><ol class="steps"><li><b>Browse the feed</b> or search by category.</li><li><b>Save and like</b> items you love.</li><li><b>Chat with sellers</b> and ask questions.</li><li><b>Order on WhatsApp</b> in one tap.</li></ol></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap1">
+      <h2>Shop and sell across the Gulf</h2>
+      <p class="sub">Sell abayas, watches, bags, beauty and more to buyers in {countries.join(', ')}. Prices show in each country’s currency.</p>
+      <ul class="cats big" aria-label="What you can sell">{cats.map(c => <li>{c}</li>)}</ul>
+    </div>
+  </section>
+
+  <section id="faq" class="band soft">
+    <div class="wrap1 narrow">
+      <h2>Frequently asked questions</h2>
+      {faq.map(([q,a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
+    </div>
+  </section>
+
+  <section class="band" lang="ar" dir="rtl" id="ar">
+    <div class="wrap1 narrow ar">
+      <h2>ماي بوتيكي — بيع أونلاين بدون إيجار محل</h2>
+      <p>ماي بوتيكي منصة تواصل اجتماعي مخصصة للبائعين في الخليج. افتح متجرك الخاص خلال دقائق بدل دفع إيجار محل، وأضف منتجاتك بالصور والسعر، ودع المشترين يتصفحون ويحفظون ويطلبون مباشرة عبر واتساب. قريباً في الكويت والسعودية والإمارات والبحرين وقطر وعُمان.</p>
+      <p style="margin-top:12px"><a href="/ar/about/" hreflang="ar" style="color:var(--gold);font-weight:600">اقرأ الصفحة كاملة بالعربية ←</a></p>
+    </div>
+  </section>
+</main>
+<footer><p>© {new Date().getFullYear()} myboutki — the social marketplace for sellers in the Gulf.</p><p>Need help? <a href="mailto:support@myboutki.com">support@myboutki.com</a></p></footer>
+</Base>
+<style is:global>
+  :root{color-scheme:light;--ink:#111;--muted:#6f6f6f;--gold:#b8913e;--soft:#f8f6f1;--line:#ece8df}
+  *{box-sizing:border-box;margin:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:20px}
+  body{font:16px/1.65 Inter,'Plex Arabic',system-ui,-apple-system,sans-serif;color:var(--ink);background:#fff}
+  img{max-width:100%}
+  .top{max-width:1180px;margin:0 auto;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}.brand img{width:62px;height:auto;display:block}.brand span{font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:600;letter-spacing:.2px}
+  .top nav{display:flex;gap:22px;flex-wrap:wrap}.top nav a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:500}.top nav a:hover{color:var(--gold)}.top nav a.lang{border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-family:'Plex Arabic',Tahoma,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:clamp(18px,4vw,48px) 22px clamp(40px,6vw,80px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:center}
+  .hero{display:flex;flex-direction:column;align-items:flex-start}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--gold);background:#f8f1e1;padding:6px 12px;border-radius:999px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(184,145,62,.6)}70%{box-shadow:0 0 0 8px rgba(184,145,62,0)}100%{box-shadow:0 0 0 0 rgba(184,145,62,0)}}
+  h1{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:clamp(40px,6vw,68px);line-height:1.05;letter-spacing:-.4px;margin:16px 0 16px;text-wrap:balance}
+  h2{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:clamp(28px,3.6vw,40px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+  h3{font-size:17px;font-weight:600;margin:0 0 6px}
+  .lead{font-size:clamp(16px,1.6vw,18px);color:#3d3d3d;max-width:34em}
+  .sub{color:#4a4a4a;max-width:46em;margin-bottom:26px;font-size:17px}
+  .cats{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 16px}
+  .cats li{font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
+  .cats.big li{font-size:15px;padding:9px 16px}
+  .where{font-size:13px;color:var(--muted)}
+  .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(6,minmax(0,1fr));gap:12px;aspect-ratio:4/5;width:100%}
+  .g{border-radius:18px;overflow:hidden;background:var(--soft);box-shadow:0 10px 30px rgba(17,17,17,.08)}
+  .g img{width:100%;height:100%;object-fit:cover;display:block}
+  .g0{grid-row:1/5}.g1{grid-row:1/3}.g2{grid-row:3/7}.g3{grid-row:5/7}.g0 img{object-position:center 20%}.g3 img{object-position:center 40%}
+  .band{padding:clamp(48px,7vw,88px) 22px}.band.soft{background:var(--soft)}
+  .wrap1{max-width:1180px;margin:0 auto}.wrap1.narrow{max-width:820px}
+  .compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .col{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px}.col ul{padding-left:20px;color:#444}.col li{margin:6px 0}
+  .col.good{border:2px solid var(--gold)}.col.good h3{color:var(--gold)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .feat{border:1px solid var(--line);border-radius:16px;padding:20px;background:#fff}.feat p{color:#4a4a4a;font-size:15px}
+  .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
+  .steps{padding-left:22px}.steps li{margin:10px 0;color:#3d3d3d}
+  details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:10px}
+  summary{cursor:pointer;font-weight:600}details p{color:#4a4a4a;margin-top:8px}
+  .ar{font-family:'Plex Arabic',Tahoma,sans-serif;text-align:right}.ar h2{font-family:'Amiri','Plex Arabic',serif;font-weight:700;font-size:clamp(28px,3.4vw,38px);line-height:1.45}.ar p{font-size:17px;line-height:1.9;color:#3d3d3d}
+  footer{text-align:center;font-size:13px;color:var(--muted);padding:26px 22px;border-top:1px solid var(--line)}footer p{margin:3px 0}
+  footer a{color:var(--gold);font-weight:600;text-decoration:none}
+  @media(max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.hero{align-items:center;text-align:center}.cats{justify-content:center}.gallery{max-width:520px;margin:0 auto}.compare,.two{grid-template-columns:minmax(0,1fr)}.top nav{gap:14px}}
+  @media(max-width:480px){.top nav a:not(.lang){display:none}}
+  @media(prefers-reduced-motion:reduce){.dot{animation:none}html{scroll-behavior:auto}}
+</style>

@@ -1,0 +1,104 @@
+import re,json,shutil,os
+SRC='/home/claude/proto/index.html';WEB='/home/claude/web'
+s=open(SRC).read()
+def R(a,b,n=1):
+    global s
+    assert s.count(a)==n,(a[:90],s.count(a));s=s.replace(a,b)
+# 1. absolute asset paths
+names='abaya|watch|bag|polo|av_pink|av_cheetah|av_diamond|av_noor|mark|logo'
+s=re.sub(r'(?<![\w/.-])((?:%s)\.(?:jpg|svg|png))'%names,r'/img/\1',s)
+s=re.sub(r'url\((ibm-plex-sans-arabic-arabic-\d+-normal\.woff2)\)',r'url(/fonts/\1)',s)
+# 2. remove dashboard switch, hide dashboard
+s=re.sub(r'<div class="switch" role="tablist">.*?</div>\n','',s,count=1,flags=re.S)
+R("const dashVisible=()=>innerWidth>=1100||document.body.dataset.view==='dash';","const dashVisible=()=>false;")
+R('<section class="dash" id="dash" aria-label="Admin dashboard"></section>','<section class="dash" id="dash" hidden></section>')
+R("document.querySelector('.switch').addEventListener(","(document.querySelector('.switch')||{addEventListener(){}}).addEventListener(")
+# 3. website CSS
+WEBCSS="""
+/* website: full screen, Instagram-web layout on desktop */
+body{background:var(--bg)}.dash,.switch{display:none!important}
+.stage{display:block;padding:0}
+.phone,.phone[style]{width:100%!important;height:100dvh!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:relative!important;top:0!important}
+.pv{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 12px;background:var(--goldsoft);color:var(--ink);font-size:12px;line-height:1.3;text-align:center;flex:none}
+.pv button{font-size:16px;line-height:1;opacity:.6;padding:2px 4px}
+.side-brand{display:none}
+@media(min-width:900px){
+ #app{display:grid!important;grid-template-columns:240px minmax(0,1fr);grid-auto-rows:auto;grid-template-rows:auto auto minmax(0,1fr)}
+ #app>.pv{grid-column:2}
+ #app>.nav{grid-column:1;grid-row:1 / span 3;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:4px;border-top:0;border-inline-end:1px solid var(--line);padding:22px 12px;order:-1}
+ #app>.bar,#app>.body{grid-column:2;width:100%;max-width:640px;margin:0 auto;box-sizing:border-box}
+ #app>.body{border-inline:1px solid var(--line);min-height:0}
+ #app>.bar{border-inline:1px solid var(--line)}
+ .nav button{width:auto!important;height:50px!important;display:flex!important;align-items:center;gap:14px;padding:0 12px!important;border-radius:10px;justify-content:flex-start!important;font-size:16px;color:var(--ink)!important}
+ .nav button:hover{background:var(--soft)}
+ .nav button.on{font-weight:700}
+ .nav button::after{content:attr(data-l)}
+ .nav .badge{left:30px!important;right:auto!important}
+ .side-brand{display:flex;align-items:center;gap:2px;padding:6px 12px 26px;text-decoration:none;color:var(--ink)}
+ .sheetwrap{left:240px!important}
+ .sheet{max-width:560px;margin-inline:auto}
+}
+@media(min-width:1200px){#app>.bar,#app>.body{max-width:720px}}
+"""
+R("</style>",WEBCSS+"</style>")
+# nav: brand + text labels (translated via data-l set in JS)
+R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
+R('class="${S.tab===t?\'on\':\'\'}" aria-label="${l}">','class="${S.tab===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
+# 4. preview banner (honest: no real accounts yet)
+R("app.innerHTML=h+`<div class=\"body\">${b}</div>`","app.innerHTML=(S.pvOff?'':`<div class=\"pv\" role=\"note\"><span>Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.</span><button data-a=\"pvoff\" aria-label=\"Dismiss\">×</button></div>`)+h+`<div class=\"body\">${b}</div>`")
+R("case 'pcat':","case 'pvoff':S.pvOff=1;try{sessionStorage.setItem('mb_pv','1')}catch(_){}render(true);break;\ncase 'pcat':")
+R("S={lang:'en',","S={pvOff:(()=>{try{return sessionStorage.getItem('mb_pv')==='1'}catch(_){return 0}})(),lang:'en',")
+m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
+d.update({"Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.":"نسخة تجريبية — تطبيق ماي بوتيكي قريباً. الحسابات والمنشورات تُحفظ على هذا الجهاز فقط.","Dismiss":"إغلاق"})
+s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
+# 5. deep links + language from URL
+R("try{restore(st)}catch(_){}\napplyLang();render();","""try{restore(st)}catch(_){}
+const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
+{const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
+applyLang();render();""")
+R("let i18nQ=0;","document.documentElement.lang=S.lang;let i18nQ=0;") if "let i18nQ=0;" in s else None
+open('/tmp/app_web.html','w').write(s)
+print('ok',len(s))
+
+# ---- write pages into the Astro public folder with SEO heads
+import html
+def head(lang):
+    ar=lang=='ar'
+    title='ماي بوتيكي — تسوّق وبِع من متاجر الخليج' if ar else 'myboutki — Shop and sell with your community | Gulf social marketplace'
+    desc=('ماي بوتيكي سوق بأسلوب إنستغرام في الخليج: تصفّح منتجات المتاجر المحلية، احفظ ما يعجبك، واطلب مباشرة عبر واتساب. افتح متجرك بدون إيجار محل — الكويت والسعودية والإمارات والبحرين وقطر وعُمان.' if ar else
+          'myboutki is an Instagram-style marketplace for the Gulf. Browse items from local shops, save favourites and order straight on WhatsApp. Open your own shop without renting a store — Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman.')
+    url='https://myboutki.com/ar/' if ar else 'https://myboutki.com/'
+    ld=[{"@context":"https://schema.org","@type":"WebSite","name":"myboutki","alternateName":"ماي بوتيكي","url":"https://myboutki.com/","inLanguage":["en","ar"]},
+        {"@context":"https://schema.org","@type":"Organization","name":"myboutki","url":"https://myboutki.com/","logo":"https://myboutki.com/img/favicon.png","email":"support@myboutki.com","areaServed":["KW","SA","AE","BH","QA","OM"]}]
+    e=html.escape
+    return f'''<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="{url}">
+<link rel="alternate" hreflang="en" href="https://myboutki.com/">
+<link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/">
+<link rel="alternate" hreflang="x-default" href="https://myboutki.com/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="myboutki">
+<meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="{'ar_KW' if ar else 'en_US'}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/favicon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
+<noscript><style>.stage{{display:none}}</style><p style="padding:24px;font:16px system-ui">{'ماي بوتيكي يحتاج إلى تفعيل JavaScript.' if ar else 'myboutki needs JavaScript turned on.'} <a href="{'/ar/about/' if ar else '/about/'}">{'عن ماي بوتيكي' if ar else 'About myboutki'}</a></p></noscript>'''
+for lang,out in [('en','index.html'),('ar','ar/index.html')]:
+    t=s.replace('<title>myboutki app preview</title>',head(lang),1)
+    if lang=='ar':t=t.replace('<html lang="en">','<html lang="ar">',1)
+    p=os.path.join(WEB,'public',out);os.makedirs(os.path.dirname(p),exist_ok=True);open(p,'w').write(t)
+for f in ['av_pink.jpg','av_cheetah.jpg','av_diamond.jpg','av_noor.jpg']:
+    shutil.copy('/home/claude/proto/'+f,os.path.join(WEB,'public/img',f))
+open(os.path.join(WEB,'public/manifest.webmanifest'),'w').write(json.dumps({"name":"myboutki","short_name":"myboutki","start_url":"/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"/img/favicon.png","sizes":"512x512","type":"image/png"}]}))
+open(os.path.join(WEB,'public/sitemap.xml'),'w').write('''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+'''+''.join(f'''<url><loc>https://myboutki.com{a}</loc><xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{e_}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com{r}"/><changefreq>daily</changefreq><priority>{pr}</priority></url>
+''' for a,e_,r,pr in [('/','/','/ar/','1.0'),('/ar/','/','/ar/','1.0'),('/about/','/about/','/ar/about/','0.8'),('/ar/about/','/about/','/ar/about/','0.8')])+'</urlset>\n')
+print('pages written')
