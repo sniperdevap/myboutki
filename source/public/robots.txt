@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Allow: /api/sitemap.xml
 Disallow: /api/
 Disallow: /pay/
 
 Sitemap: https://myboutki.com/sitemap.xml
+Sitemap: https://myboutki.com/api/sitemap.xml
