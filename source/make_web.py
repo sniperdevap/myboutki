@@ -99,7 +99,7 @@ const meRow=u?`<div class="row" style="gap:12px;margin-bottom:22px"><button data
 :`<div class="rcard"><div style="font-weight:600;font-size:15px;margin-bottom:4px">Open your shop on myboutki</div><p class="muted" style="font-size:13px;margin:0 0 12px">Post items, get orders on WhatsApp. No shop rent.</p><button class="pri w" data-a="tab" data-t="sell" style="height:40px">Start selling</button></div>`;
 return `<aside class="rail">${meRow}<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="muted" style="font-weight:600;font-size:14px">Suggested shops</span><button data-a="tab" data-t="explore" style="font-size:12px;font-weight:600">See all</button></div>
 ${shops.map(h=>{const f=S.follow.has(h);return `<div class="row" style="gap:12px;padding:7px 0"><button data-a="seller" data-s="${esc(h)}">${av(h,44)}</button><button data-a="seller" data-s="${esc(h)}" style="flex:1;min-width:0;text-align:start"><div class="row" style="gap:3px;font-weight:600;font-size:14px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h)}</span>${VB(h,14)}</div><div class="muted" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nameOf(h))}</div></button><button data-a="follow" data-s="${esc(h)}" style="font-size:12px;font-weight:600;color:${f?'var(--ink)':FOLLOW}">${f?'Following':'Follow'}</button></div>`}).join('')}
-<div style="margin-top:22px"><div class="muted" style="font-weight:600;font-size:13px;margin-bottom:8px">Get the app</div>${storeBtns()}</div><div class="rlinks"><a href="/about/">About</a> · <a href="${S.lang==='ar'?'/':'/ar/'}" data-notr>${S.lang==='ar'?'English':'العربية'}</a> · <a href="mailto:support@myboutki.com">Support</a> · <a href="/sitemap.xml">Sitemap</a><div style="margin-top:12px" data-notr dir="ltr">© ${new Date().getFullYear()} MYBOUTKI · Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman</div></div></aside>`}
+<div style="margin-top:22px"><div class="muted" style="font-weight:600;font-size:13px;margin-bottom:8px">Get the app</div>${storeBtns()}</div><div class="rlinks"><a href="${S.lang==='ar'?'/ar/blog/':'/blog/'}">Blog</a> · <a href="/about/">About</a> · <a href="${S.lang==='ar'?'/':'/ar/'}" data-notr>${S.lang==='ar'?'English':'العربية'}</a> · <a href="mailto:support@myboutki.com">Support</a> · <a href="/sitemap.xml">Sitemap</a><div style="margin-top:12px" data-notr dir="ltr">© ${new Date().getFullYear()} MYBOUTKI · Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman</div></div></aside>`}
 function stories(){""")
 
 # 4. preview banner (honest: no real accounts yet)
@@ -107,7 +107,7 @@ R("app.innerHTML=h+`<div class=\"body\">${b}</div>`","app.innerHTML=(S.pvOff?'':
 R("case 'pcat':","case 'store':toast(el.dataset.k==='ios'?'Coming soon on the App Store':'Coming soon on Google Play');break;\ncase 'pvoff':S.pvOff=1;try{sessionStorage.setItem('mb_pv','1')}catch(_){}render(true);break;\ncase 'pcat':")
 R("S={lang:'en',","S={pvOff:(()=>{try{return sessionStorage.getItem('mb_pv')==='1'}catch(_){return 0}})(),lang:'en',")
 m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
-d.update({"Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.":"نسخة تجريبية — تطبيق ماي بوتيكي قريباً. الحسابات والمنشورات تُحفظ على هذا الجهاز فقط.","Dismiss":"إغلاق","Get the app":"حمّل التطبيق","Get the myboutki app":"حمّل تطبيق ماي بوتيكي","Coming soon on the App Store":"قريباً على App Store","Coming soon on Google Play":"قريباً على Google Play","Open your shop on myboutki":"افتح متجرك على ماي بوتيكي","Post items, get orders on WhatsApp. No shop rent.":"انشر منتجاتك واستقبل الطلبات عبر واتساب. بدون إيجار محل.","Start selling":"ابدأ البيع","Suggested shops":"متاجر مقترحة","See all":"عرض الكل","About":"من نحن","Support":"الدعم","Sitemap":"خريطة الموقع"})
+d.update({"Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.":"نسخة تجريبية — تطبيق ماي بوتيكي قريباً. الحسابات والمنشورات تُحفظ على هذا الجهاز فقط.","Dismiss":"إغلاق","Get the app":"حمّل التطبيق","Get the myboutki app":"حمّل تطبيق ماي بوتيكي","Coming soon on the App Store":"قريباً على App Store","Coming soon on Google Play":"قريباً على Google Play","Open your shop on myboutki":"افتح متجرك على ماي بوتيكي","Post items, get orders on WhatsApp. No shop rent.":"انشر منتجاتك واستقبل الطلبات عبر واتساب. بدون إيجار محل.","Start selling":"ابدأ البيع","Suggested shops":"متاجر مقترحة","See all":"عرض الكل","About":"من نحن","Support":"الدعم","Sitemap":"خريطة الموقع","Blog":"المدونة"})
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
 R("app.innerHTML=(S.pvOff?","app.dataset.v=S.stage!=='none'?'auth':(S.stack.length?S.stack[S.stack.length-1].k:S.tab);app.innerHTML=(S.pvOff?")
 R("(typeof n==='string'?n:'')","(typeof n==='string'&&n?`<div class=\"xfoot\">${n}</div>`:'')")
@@ -245,12 +245,17 @@ for out in ['index.html','ar/index.html']:
     open(p,'w').write(t)
 # sitemap with products, shops and images
 urls=[('/','daily','1.0',None),('/ar/','daily','1.0',None),('/about/','monthly','0.7',None),('/ar/about/','monthly','0.7',None)]
+import re as _re
+_slugs=_re.findall(r"slug: '([a-z0-9-]+)'",open('/home/claude/web/src/blog/posts.js').read())
+urls+=[('/blog/','weekly','0.8',None),('/ar/blog/','weekly','0.8',None)]+[(f'/blog/{x}/','monthly','0.8',None) for x in _slugs]+[(f'/ar/blog/{x}/','monthly','0.8',None) for x in _slugs]
 urls+=[(x['link'].replace(SITE,''),'weekly','0.8',SITE+x['img']) for x in PROD]
 urls+=[(f'/@{h}','weekly','0.7',SITE+v['items'][0]['img']) for h,v in shops.items()]
 sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
 for u,f,pr,img in urls:
     alt=''
     if u in ('/','/ar/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://myboutki.com/"/>'
+    if u.startswith('/blog/') or u.startswith('/ar/blog/'):
+        en=u.replace('/ar/blog/','/blog/');alt=f'<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{en}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar{en}"/>'
     if u in ('/about/','/ar/about/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/about/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/about/"/>'
     sm+=f'<url><loc>{SITE}{html.escape(u)}</loc>{alt}{f"<image:image><image:loc>{img}</image:loc></image:image>" if img else ""}<changefreq>{f}</changefreq><priority>{pr}</priority></url>\n'
 open(os.path.join(WEB,'public/sitemap.xml'),'w').write(sm+'</urlset>\n')

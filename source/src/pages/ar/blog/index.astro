@@ -1,0 +1,13 @@
+---
+import Blog from '../../../layouts/Blog.astro';
+import { posts } from '../../../blog/posts.js';
+const SITE = 'https://myboutki.com';
+const jsonld = [{ '@context': 'https://schema.org', '@type': 'Blog', name: 'مدونة ماي بوتيكي', url: SITE + '/ar/blog/', inLanguage: 'ar',
+  blogPost: posts.map(p => ({ '@type': 'BlogPosting', headline: p.ar.title, url: `${SITE}/ar/blog/${p.slug}/`, datePublished: p.date, image: SITE + p.img })) }];
+---
+<Blog lang="ar" title="مدونة ماي بوتيكي — بيع أونلاين في الكويت والخليج بدون إيجار محل" description="أدلة للبائعين في الكويت والخليج: تكاليف إيجار البوث والمحل، والبيع من البيت، وقوانين 2026 للبيع الإلكتروني، وكيف تزيد مبيعاتك بدون دفع إيجار." path="/ar/blog/" jsonld={jsonld}>
+  <p class="tag">المدونة</p>
+  <h1>بِع أكثر وادفع أقل على الإيجار</h1>
+  <p class="meta">أدلة للمتاجر والبائعين من البيت في الكويت والسعودية والإمارات والبحرين وقطر وعُمان.</p>
+  <div class="cards">{posts.map(p => <a class="card" href={`/ar/blog/${p.slug}/`}><img src={p.img} alt="" loading="lazy" decoding="async" /><div><span class="tag">{p.ar.tag}</span><h2>{p.ar.title}</h2><p>{p.ar.desc}</p></div></a>)}</div>
+</Blog>

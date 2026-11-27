@@ -5,6 +5,8 @@ const {
   path = '/',
   jsonld = [],
   lang = 'en',
+  image = 'https://myboutki.com/img/og.jpg',
+  ogType = 'website',
 } = Astro.props;
 const url = new URL(path, 'https://myboutki.com').href;
 const enPath = path.replace(/^\/ar\//, '/');
@@ -25,12 +27,12 @@ const arUrl = new URL('/ar' + enPath, 'https://myboutki.com').href;
 <link rel="alternate" hreflang="x-default" href={enUrl} />
 <meta name="application-name" content="myboutki" />
 <meta name="apple-mobile-web-app-title" content="myboutki" />
-<meta property="og:type" content="website" />
+<meta property="og:type" content={ogType} />
 <meta property="og:site_name" content="myboutki" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={url} />
-<meta property="og:image" content="https://myboutki.com/img/og.jpg" />
+<meta property="og:image" content={image} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="myboutki — shop and sell with your community" />
@@ -39,7 +41,7 @@ const arUrl = new URL('/ar' + enPath, 'https://myboutki.com').href;
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
-<meta name="twitter:image" content="https://myboutki.com/img/og.jpg" />
+<meta name="twitter:image" content={image} />
 <meta name="theme-color" content="#ffffff" />
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg" />
 <link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png" />
