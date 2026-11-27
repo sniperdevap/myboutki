@@ -36,7 +36,7 @@ jobs:
           HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_B64 != '' }}
         if: env.HAS_KEY == 'true'
         run: |
-          mkdir -p /tmp/rel && cp app/build/app/outputs/bundle/release/app-release.aab /tmp/rel/myboutiki-${{ github.run_number }}.aab
+          mkdir -p /tmp/rel && cp app/build/app/outputs/bundle/release/app-release.aab /tmp/rel/myboutiki-${{ github.run_number }}.aab && cp app/build/app/outputs/flutter-apk/app-release.apk /tmp/rel/myboutiki-${{ github.run_number }}.apk
           cd /tmp/rel && git init -q && git checkout -q -b release-builds && git add . && git -c user.name=ci -c user.email=ci@myboutiki.com commit -qm "Android build ${{ github.run_number }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" release-builds
       - uses: actions/upload-artifact@v4
