@@ -88,6 +88,19 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       const h = String(url.searchParams.get('h') || '').toLowerCase();
       return json(res, 200, { available: HANDLE.test(h) && !reserved(h) && !q('SELECT 1 FROM stores WHERE handle=?').get(h) }, origin), true;
     }
+    // delete the signed-in account: every shop it owns, their posts, follows and messages
+    if (p === '/api/me' && req.method === 'DELETE') {
+      const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      const hs = q('SELECT handle FROM stores WHERE uid=?').all(u.uid).map(r => r.handle);
+      for (const h of hs) {
+        q('DELETE FROM posts WHERE handle=?').run(h);
+        q('DELETE FROM follows WHERE f=? OR t=?').run(h, h);
+        q('DELETE FROM messages WHERE f=? OR t=?').run(h, h);
+        q('DELETE FROM stores WHERE handle=?').run(h);
+      }
+      console.log('account deleted', u.uid, hs.length, 'shops');
+      return json(res, 200, { ok: true, deleted: hs }, origin), true;
+    }
     if (p === '/api/me' && req.method === 'GET') {
       const u = await auth(); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
       const stores = q('SELECT * FROM stores WHERE uid=? AND banned=0 ORDER BY created').all(u.uid).map(r => ({ ...storeOut(r), email: r.email }));

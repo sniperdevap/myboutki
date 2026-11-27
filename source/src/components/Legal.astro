@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+const { title, description, path, updated = '27 November 2026' } = Astro.props;
+---
+<Base title={`${title} | myboutiki`} description={description} path={path}>
+<header class="lt"><a href="/" class="lb" aria-label="myboutiki home"><img src="/img/mark.svg?v=2" alt="" width="56" height="36" /><span>myboutiki</span></a><nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a></nav></header>
+<main class="lm"><h1>{title}</h1><p class="lu">Last updated {updated}</p><slot /></main>
+<footer class="lf"><p>© {new Date().getFullYear()} myboutiki · <a href="mailto:support@myboutiki.com">support@myboutiki.com</a> · <a href="/delete-account/">Delete your account</a></p></footer>
+</Base>
+<style is:global>
+  *{box-sizing:border-box}body{margin:0;font:16px/1.7 Inter,'Cairo',system-ui,-apple-system,sans-serif;color:#1a1a1a;background:#fff}
+  .lt{max-width:860px;margin:0 auto;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .lb{display:flex;align-items:center;gap:8px;text-decoration:none;color:#111;font-weight:700;font-size:22px}.lb img{width:52px;height:auto}
+  .lt nav{display:flex;gap:18px}.lt nav a{color:#111;text-decoration:none;font-size:14px;font-weight:500}.lt nav a:hover{color:#7b2ff7}
+  .lm{max-width:860px;margin:0 auto;padding:10px 22px 50px}.lm h1{font-size:32px;line-height:1.2;margin:18px 0 4px}.lu{color:#777;font-size:13px;margin:0 0 26px}
+  .lm h2{font-size:20px;margin:30px 0 8px}.lm p,.lm li{color:#333}.lm a{color:#7b2ff7}.lm ul,.lm ol{padding-inline-start:22px}
+  .lm .ar{direction:rtl;text-align:right;font-family:'Cairo',Tahoma,sans-serif;border-top:1px solid #eee;margin-top:40px;padding-top:10px}
+  .box{background:#f7f3ff;border:1px solid #e6dafc;border-radius:14px;padding:16px 18px;margin:18px 0}
+  .lf{border-top:1px solid #eee;text-align:center;color:#777;font-size:13px;padding:22px}.lf a{color:#555}
+</style>

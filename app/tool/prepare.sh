@@ -64,6 +64,16 @@ fi
 P=ios/Runner.xcodeproj/project.pbxproj
 sed -i.bak -E 's/PRODUCT_BUNDLE_IDENTIFIER = com\.myboutki\.myboutki;/PRODUCT_BUNDLE_IDENTIFIER = com.myboutki.app;/g' "$P"
 sed -i.bak -E 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/g' "$P"
+# iPhone only (no iPad screenshots needed for review)
+sed -i.bak -E 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' "$P"
+grep -q 'TARGETED_DEVICE_FAMILY' "$P" || sed -i.bak -E 's/(IPHONEOS_DEPLOYMENT_TARGET = 13.0;)/\1\n\t\t\t\tTARGETED_DEVICE_FAMILY = 1;/g' "$P"
+# Sign in with Apple entitlement
+cat > ios/Runner/Runner.entitlements <<'ENT'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict><key>com.apple.developer.applesignin</key><array><string>Default</string></array></dict></plist>
+ENT
+grep -q 'CODE_SIGN_ENTITLEMENTS' "$P" || sed -i.bak -E 's#(PRODUCT_BUNDLE_IDENTIFIER = com\.myboutki\.app;)#\1\n\t\t\t\tCODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;#g' "$P"
 PL=ios/Runner/Info.plist
 python3 - "$PL" <<'PY'
 import sys,plistlib
