@@ -10,7 +10,8 @@ try { fs.mkdirSync(DATA, { recursive: true }); } catch (_) {}
 // Admin login lives in /data/admin.json (created once from the admin page with a one-time setup code).
 const ADMIN_FILE = path.join(DATA, 'admin.json');
 const readAdmin = () => { try { return JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8')); } catch (_) { return null; } };
-const SETUP_SHA = process.env.SETUP_CODE_SHA256 || '';
+const SETUP_SHA_ENV = process.env.SETUP_CODE_SHA256 || '';
+const setupSha = () => { try { return fs.readFileSync(path.join(DATA, 'setup.sha'), 'utf8').trim() || SETUP_SHA_ENV; } catch (_) { return SETUP_SHA_ENV; } };
 const KEY_FILE = path.join(DATA, 'secret.key');
 let SECRET = process.env.SESSION_SECRET || '';
 if (!SECRET) { try { SECRET = fs.readFileSync(KEY_FILE, 'utf8').trim(); } catch (_) {} if (!SECRET) { SECRET = crypto.randomBytes(32).toString('hex'); try { fs.writeFileSync(KEY_FILE, SECRET, { mode: 0o600 }); } catch (_) {} } }
@@ -265,7 +266,7 @@ http.createServer(async (req, res) => {
       const ip = req.headers['x-real-ip'] || req.socket.remoteAddress, now = Date.now(), a = (loginTries.get(ip) || []).filter(t => now - t < 9e5);
       if (a.length >= 8) return json(res, 429, { error: 'Too many attempts. Wait 15 minutes.' });
       const b = await readBody(req), code = crypto.createHash('sha256').update(String(b.code || '').trim()).digest('hex');
-      if (!SETUP_SHA || code.length !== SETUP_SHA.length || !crypto.timingSafeEqual(Buffer.from(code), Buffer.from(SETUP_SHA))) { a.push(now); loginTries.set(ip, a); return json(res, 401, { error: 'Wrong setup code' }); }
+      const SETUP_SHA = setupSha(); if (!SETUP_SHA || code.length !== SETUP_SHA.length || !crypto.timingSafeEqual(Buffer.from(code), Buffer.from(SETUP_SHA))) { a.push(now); loginTries.set(ip, a); return json(res, 401, { error: 'Wrong setup code' }); }
       const user = String(b.user || '').trim().toLowerCase();
       if (!/^[a-z0-9._@-]{3,40}$/.test(user)) return json(res, 400, { error: 'Username: 3 to 40 letters or numbers' });
       const pass = String(b.pass || '');
