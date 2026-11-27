@@ -27,8 +27,8 @@ jobs:
       - name: Build APK and App Bundle
         run: |
           cd app
-          flutter build apk --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
-          flutter build appbundle --release --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
+          flutter build apk --release --build-number=${{ github.run_number }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
+          flutter build appbundle --release --build-number=${{ github.run_number }} --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
       - uses: actions/upload-artifact@v4
         with:
           name: myboutki-android
@@ -49,3 +49,44 @@ jobs:
         run: bash app/tool/prepare.sh
       - name: Build iOS (no signing, checks that it compiles)
         run: cd app && flutter build ios --release --no-codesign --dart-define=GOOGLE_WEB_CLIENT_ID=${{ vars.GOOGLE_WEB_CLIENT_ID || '757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com' }}
+
+  # Signed iOS build uploaded straight to App Store Connect (TestFlight).
+  # Runs only when the App Store Connect API key secrets exist.
+  ios-release:
+    runs-on: macos-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check key
+        id: k
+        run: if [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_KEY_P8" ]; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "No App Store Connect key yet - skipping upload"; fi
+      - uses: subosito/flutter-action@v2
+        if: steps.k.outputs.ok == '1'
+        with: { channel: stable, cache: true }
+      - name: Prepare project
+        if: steps.k.outputs.ok == '1'
+        env:
+          GOOGLE_IOS_CLIENT_ID: ${{ vars.GOOGLE_IOS_CLIENT_ID || '757704906396-lr2tf39v4eknna166gvnpm6qukbei0u7.apps.googleusercontent.com' }}
+          GOOGLE_IOS_REVERSED_CLIENT_ID: ${{ vars.GOOGLE_IOS_REVERSED_CLIENT_ID || 'com.googleusercontent.apps.757704906396-lr2tf39v4eknna166gvnpm6qukbei0u7' }}
+        run: bash app/tool/prepare.sh
+      - name: Build, sign and upload
+        if: steps.k.outputs.ok == '1'
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s' "$ASC_KEY_P8" > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
+          KEY=~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
+          cd app
+          flutter build ios --release --no-codesign --build-number=${{ github.run_number }} --dart-define=GOOGLE_WEB_CLIENT_ID=757704906396-fc5cgu4cq6gih42f5g3andjp6tef3p11.apps.googleusercontent.com
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release -archivePath $RUNNER_TEMP/Runner.xcarchive archive \
+            DEVELOPMENT_TEAM=D3MLX9TDCP CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          cat > $RUNNER_TEMP/export.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>destination</key><string>upload</string><key>teamID</key><string>D3MLX9TDCP</string><key>signingStyle</key><string>automatic</string></dict></plist>
+          PL
+          xcodebuild -exportArchive -archivePath $RUNNER_TEMP/Runner.xcarchive -exportOptionsPlist $RUNNER_TEMP/export.plist -exportPath $RUNNER_TEMP/out -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
