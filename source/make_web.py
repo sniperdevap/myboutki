@@ -7,7 +7,7 @@ def R(a,b,n=1):
 # 1. absolute asset paths
 names='abaya|watch|bag|polo|av_pink|av_cheetah|av_diamond|av_noor|mark|logo'
 s=re.sub(r'(?<![\w/.-])((?:%s)\.(?:jpg|svg|png))'%names,r'/img/\1',s);s=s.replace('/img/mark.svg','/img/mark.svg?v=2')
-s=re.sub(r'url\((ibm-plex-sans-arabic-arabic-\d+-normal\.woff2)\)',r'url(/fonts/\1)',s)
+s=re.sub(r'url\(((?:ibm-plex-sans-arabic-arabic|cairo-arabic)-\d+-normal\.woff2)\)',r'url(/fonts/\1)',s)
 # 2. remove dashboard switch, hide dashboard
 # 3. website CSS
 WEBCSS="""
