@@ -86,7 +86,7 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
 """
 R("</style>",WEBCSS+"</style>")
 # nav: brand + text labels (translated via data-l set in JS)
-R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg?v=2" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
+R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="gohome" dir="ltr" data-notr><img src="/img/mark.svg?v=2" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
 R('class="${cur===t?\'on\':\'\'}" aria-label="${l}">','class="${cur===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
 
 # 3b. wide desktop layout: right rail on feed, view-aware widths
