@@ -15,7 +15,7 @@ G=android/app/build.gradle.kts; [ -f "$G" ] || G=android/app/build.gradle
 sed -i.bak -E 's/applicationId *=? *"[^"]+"/applicationId = "com.myboutki.app"/' "$G"
 sed -i.bak -E 's/minSdk *=? *flutter\.minSdkVersion/minSdk = 23/' "$G"
 M=android/app/src/main/AndroidManifest.xml
-sed -i.bak -E 's/android:label="[^"]*"/android:label="myboutiki"/' "$M"
+sed -i.bak -E 's/android:label="[^"]*"/android:label="MyBoutiki"/' "$M"
 grep -q 'android.permission.INTERNET' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$M"
 grep -q 'RECORD_AUDIO' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>\n    <application#' "$M"
 
@@ -80,7 +80,7 @@ PL=ios/Runner/Info.plist
 python3 - "$PL" <<'PY'
 import sys,plistlib
 p=sys.argv[1];d=plistlib.load(open(p,'rb'))
-d['CFBundleDisplayName']='myboutiki'; d['CFBundleName']='myboutiki'
+d['CFBundleDisplayName']='MyBoutiki'; d['CFBundleName']='MyBoutiki'
 d['NSPhotoLibraryUsageDescription']='myboutiki uses your photos so you can add pictures of the items you sell.'
 d['NSCameraUsageDescription']='myboutiki uses the camera so you can take photos of the items you sell.'
 d['NSMicrophoneUsageDescription']='myboutiki uses the microphone so you can send voice messages in Inbox.'

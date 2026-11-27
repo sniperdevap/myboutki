@@ -45,7 +45,7 @@ class MyBoutkiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'myboutiki',
+      title: 'MyBoutiki',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFFDD2A7B), brightness: Brightness.light),
       darkTheme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFFDD2A7B), brightness: Brightness.dark),
