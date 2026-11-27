@@ -44,7 +44,30 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
  #app[data-v=detail]>.body>*{max-width:760px}
  .grid{gap:4px!important}
  #app>.xfoot{grid-column:2;width:100%;max-width:808px;margin:0 auto;padding:0 24px;box-sizing:border-box}
- #app:is([data-v=seller],[data-v=profile]) .igp{max-width:760px;margin-inline:auto;padding-top:24px!important;padding-bottom:12px}
+ #app:is([data-v=seller],[data-v=profile])>.body>*{max-width:1240px}
+ #app:is([data-v=seller],[data-v=profile]) .igp{display:grid;grid-template-columns:minmax(200px,300px) minmax(0,1fr);max-width:1040px!important;margin-inline:auto;padding:36px 16px 8px!important;align-items:start}
+ .igp>.row:first-child{display:contents}
+ .igp>.row:first-child>.ring{grid-column:1;grid-row:1 / span 12;justify-self:center;align-self:start;margin:0!important;transform:none!important}
+ .igp>.row:first-child>.ring .av{width:150px!important;height:150px!important;font-size:58px!important}
+ .igp>*{grid-column:2;max-width:640px}
+ .igp>.row:first-child>div:last-child{grid-column:2}
+ .igp>.row:first-child>div:last-child>.row{font-size:20px!important;font-weight:600!important;margin-bottom:14px!important}
+ .igp>.row:first-child>div:last-child>div:last-child{gap:32px!important;margin-bottom:6px}
+ .igp>.row:first-child>div:last-child>div:last-child>div{display:flex;gap:5px;align-items:baseline}
+ .igp>.row:first-child>div:last-child>div:last-child>div>div:first-child{font-size:16px!important;font-weight:600!important}
+ .igp>.row:first-child>div:last-child>div:last-child>div>div:last-child{font-size:16px!important}
+ .igp>.row:has(>button),.igp>.row:has(>.wa){max-width:560px}
+ .igp>.row>button,.igp>.row>.wa{height:40px!important;border-radius:10px!important}
+ .igp>:is(.sxw,.scrollx){grid-column:1 / -1;max-width:none;margin-top:30px}
+ .igp .scrollx{gap:34px!important;padding:6px 0 10px calc(150px - 77px)!important;-webkit-mask-image:none!important;mask-image:none!important}
+ .phone[dir=rtl] .igp .scrollx{padding:6px calc(150px - 77px) 10px 0!important}
+ .igp .scrollx>button{width:88px!important;flex:none}
+ .igp .scrollx>button>div:first-child{width:86px!important;height:86px!important}
+ .igp .scrollx>button>div:last-child{font-size:13px!important;font-weight:600}
+ .toast{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:max-content;max-width:min(420px,90vw);bottom:32px!important}
+ #app:is([data-v=seller],[data-v=profile]) .body>div:last-child{margin-top:28px!important}
+ #app:is([data-v=seller],[data-v=profile]) .grid:not(.mosaic){gap:4px!important}
+ #app[data-v=explore]>.body>*{max-width:1240px}
  .igp .ring{transform:scale(1.25);transform-origin:center;margin:14px 28px 14px 14px}
  .nav button{width:auto!important;height:50px!important;display:flex!important;align-items:center;gap:16px;padding:0 12px!important;border-radius:10px;justify-content:flex-start!important;font-size:16px;color:var(--ink)!important;transition:background .15s}
  .nav button:hover{background:var(--soft)}
@@ -54,11 +77,15 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
  .nav .badge{left:30px!important;right:auto!important}
  .side-brand{display:flex;align-items:center;gap:2px;padding:4px 12px 30px;text-decoration:none;color:var(--ink)}
  .sheetwrap{left:244px!important}
+ #app[data-v=auth]{display:flex!important;flex-direction:column;width:100%;max-width:460px;margin:0 auto;border-inline:1px solid var(--line)}
+ #app[data-v=auth]~.sheetwrap,#app[data-v=auth] .sheetwrap{left:0!important}
  .sheet{max-width:560px;margin-inline:auto;border-radius:20px 20px 0 0}
 }
+@media(min-width:1180px){#app:is([data-v=seller],[data-v=profile],[data-v=explore],[data-v=saved]) .grid:not(.mosaic){grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(min-width:1560px){#app:is([data-v=seller],[data-v=profile],[data-v=explore],[data-v=saved]) .grid:not(.mosaic){grid-template-columns:repeat(5,minmax(0,1fr))!important}}
 @media(min-width:1280px){#app{grid-template-columns:300px minmax(0,1fr)}#app>.nav{padding-inline:20px}.sheetwrap{left:300px!important}}
 @media(min-width:900px) and (max-width:1159px){#app[data-v=feed]>.body{grid-template-columns:minmax(0,600px)}#app[data-v=feed] .rail{display:none}}
-@media(min-width:900px){.phone[dir=rtl] .nav .badge{right:30px!important;left:auto!important}.phone[dir=rtl] .igp .ring{margin:14px 14px 14px 28px}}
+@media(min-width:900px){.phone[dir=rtl] .nav .badge{right:30px!important;left:auto!important}}
 """
 R("</style>",WEBCSS+"</style>")
 # nav: brand + text labels (translated via data-l set in JS)
@@ -87,6 +114,7 @@ d.update({"Preview — the myboutki app launches soon. Accounts and posts are sa
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
 R("app.innerHTML=(S.pvOff?","app.dataset.v=S.stage!=='none'?'auth':(S.stack.length?S.stack[S.stack.length-1].k:S.tab);app.innerHTML=(S.pvOff?")
 R("(typeof n==='string'?n:'')","(typeof n==='string'&&n?`<div class=\"xfoot\">${n}</div>`:'')")
+R("app.innerHTML=S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=S.stage==='setup'?")
 # 5. deep links + language from URL
 R("try{restore(st)}catch(_){}\napplyLang();render();","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
