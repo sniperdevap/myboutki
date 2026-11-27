@@ -232,18 +232,22 @@ class _ShellState extends State<Shell> {
         },
         child: Scaffold(
           backgroundColor: bg,
-          body: SafeArea(
-            bottom: false,
-            child: Stack(children: [
-              WebViewWidget(controller: _web),
-              if (_progress < 100 && !_firstLoad)
-                const Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: 2, color: Color(0xFFDD2A7B), backgroundColor: Colors.transparent)),
-              if (_firstLoad && !_offline)
-                Positioned.fill(child: Container(color: bg, alignment: Alignment.center,
-                    child: Image.asset(dark ? 'assets/splash_dark.png' : 'assets/splash_light.png', width: 180))),
-              if (_offline) Positioned.fill(child: _OfflineView(bg: bg, onRetry: _retry)),
-            ]),
-          ),
+          body: Stack(children: [
+            SafeArea(
+              bottom: false,
+              child: Stack(children: [
+                WebViewWidget(controller: _web),
+                if (_progress < 100 && !_firstLoad)
+                  const Positioned(top: 0, left: 0, right: 0, child: LinearProgressIndicator(minHeight: 2, color: Color(0xFFDD2A7B), backgroundColor: Colors.transparent)),
+                if (_offline) Positioned.fill(child: _OfflineView(bg: bg, onRetry: _retry)),
+              ]),
+            ),
+            // Same logo, size and position as the native launch screen, so the
+            // hand-over from the system splash is seamless (no second splash).
+            if (_firstLoad && !_offline)
+              Positioned.fill(child: Container(color: bg, alignment: Alignment.center,
+                  child: Image.asset(dark ? 'assets/splash_dark.png' : 'assets/splash_light.png', width: 90))),
+          ]),
         ),
       ),
     );
