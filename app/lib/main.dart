@@ -153,6 +153,9 @@ class _ShellState extends State<Shell> {
       case 'apple':
         await _appleSignIn();
         break;
+      case 'signout':
+        try { await _gsi.signOut(); } catch (_) {}
+        break;
       case 'shareimg':
         try {
           final bytes = base64Decode('${m['data'] ?? ''}');
@@ -169,11 +172,13 @@ class _ShellState extends State<Shell> {
   Future<void> _send(String fn, Map<String, dynamic> data) =>
       _web.runJavaScript('window.$fn && window.$fn(${jsonEncode(data)})');
 
+  // One shared client: creating it again and signing out before every
+  // sign-in added a network round trip before the account sheet appeared.
+  static final GoogleSignIn _gsi = GoogleSignIn(scopes: const ['email', 'profile'], serverClientId: kGoogleServerClientId.isEmpty ? null : kGoogleServerClientId);
+
   Future<void> _googleSignIn() async {
     try {
-      final g = GoogleSignIn(scopes: const ['email', 'profile'], serverClientId: kGoogleServerClientId.isEmpty ? null : kGoogleServerClientId);
-      await g.signOut();
-      final acc = await g.signIn();
+      final acc = await _gsi.signIn();
       if (acc == null) return _send('mbNativeAuth', {'cancel': true});
       final auth = await acc.authentication;
       await _send('mbNativeAuth', {'provider': 'google', 'idToken': auth.idToken, 'accessToken': auth.accessToken});
