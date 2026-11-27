@@ -270,7 +270,7 @@ http.createServer(async (req, res) => {
       const user = String(b.user || '').trim().toLowerCase();
       if (!/^[a-z0-9._@-]{3,40}$/.test(user)) return json(res, 400, { error: 'Username: 3 to 40 letters or numbers' });
       const pass = String(b.pass || '');
-      if (pass.length < 10 || !/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass)) return json(res, 400, { error: 'Password: at least 10 characters with letters and numbers' });
+      if (pass.length < 6) return json(res, 400, { error: 'Password: at least 6 characters' });
       fs.writeFileSync(ADMIN_FILE, JSON.stringify({ user, hash: hashPass(pass), created: Date.now() }), { mode: 0o600 });
       res.setHeader('Set-Cookie', `mb_admin=${encodeURIComponent(makeSession())}; Path=/; Max-Age=${7 * 86400}; HttpOnly; Secure; SameSite=Strict`);
       return json(res, 200, { ok: true });
@@ -282,7 +282,7 @@ http.createServer(async (req, res) => {
       if (url.pathname === '/api/admin/config' && req.method === 'POST') { try { setConfig(await readBody(req)); return json(res, 200, CONFIG); } catch (e) { return json(res, 400, { error: e.message }); } }
       if (url.pathname === '/api/admin/password' && req.method === 'POST') {
         const b = await readBody(req); if (!checkPass(b.old || '')) return json(res, 401, { error: 'Current password is wrong' });
-        const pass = String(b.pass || ''); if (pass.length < 10 || !/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass)) return json(res, 400, { error: 'Password: at least 10 characters with letters and numbers' });
+        const pass = String(b.pass || ''); if (pass.length < 6) return json(res, 400, { error: 'Password: at least 6 characters' });
         const adm = readAdmin(); fs.writeFileSync(ADMIN_FILE, JSON.stringify({ ...adm, hash: hashPass(pass), changed: Date.now() }), { mode: 0o600 }); return json(res, 200, { ok: true });
       }
       if (url.pathname === '/api/admin/payments') return json(res, 200, readLog('payments.jsonl').reverse().slice(0, 500));
