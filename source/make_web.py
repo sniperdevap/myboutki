@@ -129,7 +129,7 @@ const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
 function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
 const mine=storesOf(em);if(mine.length){S.user=mine[0];markSigned(S.user);S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
-else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=0;S.stage='setup';render()}}
+else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=detectCC();S.stage='setup';render()}}
 async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.style.pointerEvents='none';el.style.opacity='.75';el.textContent=tr('Opening Google…')}
 try{const {U,auth}=await fbLoad(),pv=new U.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
 if(innerWidth<900||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){saveNow();await U.signInWithRedirect(auth,pv);return}let r;try{r=await U.signInWithPopup(auth,pv)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||'')){await U.signInWithRedirect(auth,pv);return}throw e}
@@ -172,7 +172,7 @@ const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(
 for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
 P.sort((a,b)=>b.at-a.at);return j}
 const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
-const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp]);
+const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp,x.cur,x.po]);
 function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
 async function syncPush(){if(SYNC.busy||!SYNC.uid){return}SYNC.busy=true;try{
 const mine=Object.values(REG).filter(r=>r.email===SYNC.email&&r.handle);
@@ -183,7 +183,7 @@ for(const r of mine){if(r.syncErr===r.handle)continue;
 const hs=new Set(mine.filter(r=>r.srvOk).map(r=>r.handle));
 let done=new Set(JSON.parse(localStorage.getItem('mb_synced')||'[]'));
 for(const x of P.filter(p=>hs.has(p.s))){if(x.imgs&&x.imgs.some(u=>typeof u==='string'&&u.startsWith('loading:')))continue;if(postSig(x)===x._sh&&x.synced)continue;
- try{const imgs=[];for(const u of x.imgs||[]){const v=await upImg(u);if(v)imgs.push(v)}if(!imgs.length)continue;const j=await api('PUT','/api/posts/'+x.id,{s:x.s,h:x.h,d:x.d,p:x.p,c:x.c,imgs,ic:x.ic,bg:x.bg,fg:x.fg,sold:!!x.sold,soldAt:x.soldAt,soldPrice:x.soldPrice,rp:x.rp,at:x.at});x.imgs=imgs;x.synced=1;x._sh=postSig(x);done.add(String(x.id))}catch(e){if(e.code===410){const i=P.indexOf(x);if(i>=0)P.splice(i,1);toast('One of your posts was removed by myboutki')}}}
+ try{const imgs=[];for(const u of x.imgs||[]){const v=await upImg(u);if(v)imgs.push(v)}if(!imgs.length)continue;const j=await api('PUT','/api/posts/'+x.id,{s:x.s,h:x.h,d:x.d,p:x.p,cur:x.cur,po:x.po,c:x.c,imgs,ic:x.ic,bg:x.bg,fg:x.fg,sold:!!x.sold,soldAt:x.soldAt,soldPrice:x.soldPrice,rp:x.rp,at:x.at});x.imgs=imgs;x.synced=1;x._sh=postSig(x);done.add(String(x.id))}catch(e){if(e.code===410){const i=P.indexOf(x);if(i>=0)P.splice(i,1);toast('One of your posts was removed by myboutki')}}}
 for(const id of [...done]){const x=P.find(p=>String(p.id)===id);if(!x||(!hs.has(x.s)&&!isMine(x.s))){if(!x){try{await api('DELETE','/api/posts/'+id)}catch(_){}}done.delete(id)}}
 localStorage.setItem('mb_synced',JSON.stringify([...done]));queueSave()}catch(_){}finally{SYNC.busy=false}}
 async function syncStart(){const tok=await fbToken();if(!tok)return;try{await syncMe();SYNC.on=true;render(true);queueSync()}catch(_){}}
