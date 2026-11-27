@@ -62,8 +62,8 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   }
   function sanitizePost(b, d = {}) {
     const imgs = (Array.isArray(b.imgs) ? b.imgs : d.imgs || []).filter(okUrl).slice(0, 10);
-    const cur = /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || null, po = b.po != null && isFinite(+b.po) ? Math.max(0, Math.min(1e8, +b.po)) : d.po ?? null;
-    return { ...d, h: clean(b.h ?? d.h, 120), d: clean(b.d ?? d.d, 2200), p: Math.max(0, Math.min(1e7, +b.p || +d.p || 0)), cur, po, c: clean(b.c ?? d.c, 40), imgs,
+    const cur = /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || null, po = 'po' in b ? (b.po != null && isFinite(+b.po) && +b.po > 0 ? Math.min(1e8, +b.po) : null) : d.po ?? null;
+    return { ...d, h: clean(b.h ?? d.h, 120), d: clean(b.d ?? d.d, 2200), p: 'p' in b ? Math.max(0, Math.min(1e7, +b.p || 0)) : Math.max(0, +d.p || 0), cur, po, c: clean(b.c ?? d.c, 40), imgs,
       ic: clean(b.ic ?? d.ic, 30), bg: clean(b.bg ?? d.bg, 12), fg: clean(b.fg ?? d.fg, 12), l: Math.max(0, +d.l || 0),
       sold: !!(b.sold ?? d.sold), soldAt: b.sold ? (+b.soldAt || d.soldAt || Date.now()) : null, soldPrice: b.sold ? (+b.soldPrice || d.soldPrice || null) : null, rp: +b.rp || d.rp || null,
       boost: d.boost || null }; // boosts are only set by the payment check, never by the browser
@@ -183,9 +183,9 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       const e = t => String(t || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       let title, desc, img, link, ld;
       if (m[2]) { const r = q('SELECT p.*, s.data sd FROM posts p JOIN stores s ON s.handle=p.handle WHERE p.id=? AND p.deleted=0 AND s.banned=0').get(m[2]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; }
-        const d = J(r.data), sd = J(r.sd), dec = { KWD: 3, BHD: 3, OMR: 3 }[d.cur] ?? 2, price = d.cur && d.po != null ? d.cur + ' ' + (+d.po).toFixed(d.cur ? dec : 3) : 'KWD ' + (+d.p || 0).toFixed(3);
-        title = `${d.h} – ${price} | ${sd.name || r.handle} on myboutki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutki.com/p/${r.id}`;
-        ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.h, description: d.d, image: (d.imgs || []).map(u => 'https://myboutki.com' + u), category: d.c, offers: { '@type': 'Offer', url: link, price: d.cur && d.po != null ? (+d.po).toFixed(dec) : (+d.p || 0).toFixed(3), priceCurrency: d.cur && d.po != null ? d.cur : 'KWD', availability: d.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } };
+        const d = J(r.data), sd = J(r.sd), dec = { KWD: 3, BHD: 3, OMR: 3 }[d.cur] ?? 2, price = d.cur && d.po != null ? d.cur + ' ' + (+d.po).toFixed(d.cur ? dec : 3) : 'KWD ' + (+d.p || 0).toFixed(3), noPrice = !(+d.p > 0) && !(+d.po > 0);
+        title = `${d.h}${noPrice ? '' : ' – ' + price} | ${sd.name || r.handle} on myboutki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutki.com/p/${r.id}`;
+        ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.h, description: d.d, image: (d.imgs || []).map(u => 'https://myboutki.com' + u), category: d.c, offers: noPrice ? undefined : { '@type': 'Offer', url: link, price: d.cur && d.po != null ? (+d.po).toFixed(dec) : (+d.p || 0).toFixed(3), priceCurrency: d.cur && d.po != null ? d.cur : 'KWD', availability: d.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } };
       } else { const r = q('SELECT * FROM stores WHERE handle=? AND banned=0').get(m[3]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; } const d = J(r.data);
         const first = q('SELECT data FROM posts WHERE handle=? AND deleted=0 ORDER BY at DESC LIMIT 1').get(r.handle);
         title = `${d.name} (@${r.handle}) on myboutki`; desc = (d.bio || `Shop ${d.name} on myboutki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutki.com/@${r.handle}`;
