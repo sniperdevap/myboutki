@@ -21,7 +21,7 @@ const faq = [
   ['كيف يدفع المشترون ويستلمون المنتجات؟','يضيف المشتري المنتجات إلى السلة ويضغط «اطلب عبر واتساب». تصل للبائع رسالة بكل المنتجات، ويتفق مع المشتري مباشرةً على الدفع والتوصيل.'],
   ['في أي دول يتوفر ماي بوتيكي؟','يُطلق ماي بوتيكي في الكويت والسعودية والإمارات والبحرين وقطر وعُمان.'],
   ['ماذا يمكنني أن أبيع على ماي بوتيكي؟','الملابس والعبايات، والإكسسوارات، والساعات، ومنتجات العناية بالبشرة، والاستحمام والعناية، والنظارات، والعدسات اللاصقة، والأحذية، والإلكترونيات، والمنزل والمعيشة، والرياضة وغيرها.'],
-  ['متى يُطلق ماي بوتيكي؟','ماي بوتيكي قادم قريباً على الويب وأجهزة iPhone وأندرويد. تابع هذه الصفحة لموعد الإطلاق.'],
+  ['متى يُطلق ماي بوتيكي؟','ماي بوتيكي قادم متاح الآن على الويب في myboutiki.com، وتطبيقات iPhone وأندرويد قريباً. تابع هذه الصفحة لموعد الإطلاق.'],
 ];
 const jsonld = [
   { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','alternateName':'ماي بوتيكي','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutiki.com','areaServed':['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'],'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutiki.com','availableLanguage':['Arabic','English']}},
@@ -30,7 +30,7 @@ const jsonld = [
   { '@context':'https://schema.org','@type':'FAQPage','inLanguage':'ar','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
 ];
 ---
-<Base lang="ar" path="/ar/about/" title="ماي بوتيكي — بيع أونلاين بدون إيجار محل | سوق التواصل الاجتماعي في الخليج" description="ماي بوتيكي سوق إلكتروني بأسلوب وسائل التواصل الاجتماعي في الخليج. افتح متجرك خلال دقائق بدل دفع إيجار محل، وانشر منتجاتك بالصور، ودع المشترين يجدونها ويحفظونها ويطلبونها عبر واتساب. قريباً في الكويت والسعودية والإمارات والبحرين وقطر وعُمان." jsonld={jsonld}>
+<Base lang="ar" path="/ar/about/" title="ماي بوتيكي — بيع أونلاين بدون إيجار محل | سوق التواصل الاجتماعي في الخليج" description="ماي بوتيكي سوق إلكتروني بأسلوب وسائل التواصل الاجتماعي في الخليج. افتح متجرك خلال دقائق بدل دفع إيجار محل، وانشر منتجاتك بالصور، ودع المشترين يجدونها ويحفظونها ويطلبونها عبر واتساب. متاح في الكويت والسعودية والإمارات والبحرين وقطر وعُمان." jsonld={jsonld}>
 <header class="top"><a href="/ar/" class="brand" aria-label="الصفحة الرئيسية لماي بوتيكي" dir="ltr"><img src="/img/mark.svg?v=2" alt="" width="64" height="41" /><span>myboutiki</span></a><nav aria-label="الأقسام"><a href="#why">لماذا ماي بوتيكي</a><a href="#how">كيف يعمل</a><a href="#faq">الأسئلة الشائعة</a><a href="/about/" class="lang" hreflang="en" lang="en">English</a></nav></header>
 <main>
   <section class="wrap hero-wrap">
@@ -39,7 +39,7 @@ const jsonld = [
       <h1>بِع أونلاين بدون إيجار محل</h1>
       <p class="lead"><strong>ماي بوتيكي</strong> سوق إلكتروني بأسلوب وسائل التواصل الاجتماعي مصمم للبائعين. افتح متجرك خلال دقائق، وانشر منتجاتك بالصور، ودع المشترين في أنحاء الخليج يجدونها ويحفظونها ويطلبونها عبر واتساب — بدون إيجار ولا تكاليف تأسيس.</p>
       <ul class="cats" aria-label="الفئات">{cats.map(c => <li>{c}</li>)}</ul>
-      <p class="where">قريباً في {countries.join(' · ')}</p>
+      <p class="where">متاح في {countries.join(' · ')}</p>
     </div>
     <div class="gallery" aria-label="منتجات على ماي بوتيكي">
       {shots.map(([src, alt], i) => <figure class={`g g${i}`}><img src={src} alt={alt} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" /></figure>)}

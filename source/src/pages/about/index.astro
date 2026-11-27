@@ -19,9 +19,9 @@ const faq = [
   ['Do I need to rent a shop to sell on myboutiki?','No. myboutiki replaces the need to rent a store. Your shop lives on myboutiki, so you can sell from home and reach buyers across the Gulf without paying rent.'],
   ['Is it free to sell on myboutiki?','Opening a shop and posting items is free. Sellers who want the blue verified badge and top placement can choose an optional Verified plan.'],
   ['How do buyers pay and receive items?','Buyers add items to their cart and tap Order on WhatsApp. The seller receives a message listing every item and arranges payment and delivery directly with the buyer.'],
-  ['Which countries is myboutiki available in?','myboutiki is launching in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.'],
+  ['Which countries is myboutiki available in?','myboutiki is available in Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman.'],
   ['What can I sell on myboutiki?','Apparel and abayas, accessories, watches, derma beauty, bath and body, eyewear, contact lenses, footwear, electronics, home and living, sports and more.'],
-  ['When does myboutiki launch?','myboutiki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
+  ['Is myboutiki available now?','Yes. myboutiki is live on the web at myboutiki.com. The iPhone and Android apps are coming soon.'],
 ];
 const jsonld = [
   { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutiki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutiki.com','availableLanguage':['English','Arabic']}},
@@ -35,11 +35,11 @@ const jsonld = [
 <main>
   <section class="wrap hero-wrap">
     <div class="hero">
-      <p class="eyebrow"><span class="dot"></span>Coming soon</p>
+      <p class="eyebrow"><span class="dot"></span>Now live · apps coming soon</p>
       <h1>Sell online without renting a shop</h1>
       <p class="lead"><strong>myboutiki</strong> is a social media marketplace made for sellers. Open your own shop in minutes, post your items with photos, and let buyers across the Gulf find, save and order them on WhatsApp — no store rent, no setup costs.</p>
       <ul class="cats" aria-label="Categories">{cats.map(c => <li>{c}</li>)}</ul>
-      <p class="where">Launching in {countries.join(' · ')}</p>
+      <p class="where">Available in {countries.join(' · ')}</p>
     </div>
     <div class="gallery" aria-label="Items on myboutiki">
       {shots.map(([src, alt], i) => <figure class={`g g${i}`}><img src={src} alt={alt} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" /></figure>)}
@@ -90,7 +90,7 @@ const jsonld = [
   <section class="band" lang="ar" dir="rtl" id="ar">
     <div class="wrap1 narrow ar">
       <h2>ماي بوتيكي — بيع أونلاين بدون إيجار محل</h2>
-      <p>ماي بوتيكي منصة تواصل اجتماعي مخصصة للبائعين في الخليج. افتح متجرك الخاص خلال دقائق بدل دفع إيجار محل، وأضف منتجاتك بالصور والسعر، ودع المشترين يتصفحون ويحفظون ويطلبون مباشرة عبر واتساب. قريباً في الكويت والسعودية والإمارات والبحرين وقطر وعُمان.</p>
+      <p>ماي بوتيكي منصة تواصل اجتماعي مخصصة للبائعين في الخليج. افتح متجرك الخاص خلال دقائق بدل دفع إيجار محل، وأضف منتجاتك بالصور والسعر، ودع المشترين يتصفحون ويحفظون ويطلبون مباشرة عبر واتساب. متاح في الكويت والسعودية والإمارات والبحرين وقطر وعُمان.</p>
       <p style="margin-top:12px"><a href="/ar/about/" hreflang="ar" style="color:var(--gold);font-weight:600">اقرأ الصفحة كاملة بالعربية ←</a></p>
     </div>
   </section>

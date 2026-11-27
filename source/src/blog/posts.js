@@ -246,4 +246,148 @@ ${cta.en}`,
 ${cta.ar}`,
     },
   },
+  {
+    slug: 'open-online-store-kuwait-free',
+    date: '2026-11-27',
+    img: '/img/blog-bag.jpg',
+    en: {
+      title: 'How to open an online store in Kuwait for free (step by step)',
+      desc: 'Open your own online store in Kuwait and the Gulf for free: create your shop, add products with photos, set prices in KWD and receive orders on WhatsApp — no rent, no website to build.',
+      tag: 'Guide',
+      body: `
+<p>You don’t need a website, a developer or a rented shop to start selling online in Kuwait. With a marketplace like myboutiki you can have a working store in about ten minutes.</p>
+<h2>1. Create your shop</h2>
+<p>Sign up with your email, Google or Apple. Choose your store name, a username (this becomes your link, for example <b>myboutiki.com/@yourshop</b>), your country and your phone number for WhatsApp.</p>
+<h2>2. Make your profile look professional</h2>
+<ul><li>Upload your logo as the profile photo.</li><li>Write a short bio: what you sell, delivery areas and working hours.</li><li>Add your Instagram or website links.</li></ul>
+<h2>3. Add your first products</h2>
+<p>Tap <b>Sell</b>, add up to 10 photos, a title, a description and the category. The price is optional — if you leave it empty, buyers see “Ask for price” and message you directly.</p>
+<h2>4. Receive orders</h2>
+<p>Buyers can chat with you in the app (text, photos and voice messages), call you, or send one WhatsApp message with all the items in their cart. You arrange payment and delivery directly.</p>
+<h2>5. Get found</h2>
+<p>Every product gets its own page that Google can index. Share your items to Instagram Stories, WhatsApp, X and Facebook with one tap, and boost your best items to appear first.</p>
+${cta.en}`,
+    },
+    ar: {
+      title: 'كيف تفتح متجراً إلكترونياً في الكويت مجاناً (خطوة بخطوة)',
+      desc: 'افتح متجرك الإلكتروني في الكويت والخليج مجاناً: أنشئ متجرك، أضف منتجاتك بالصور، حدّد الأسعار بالدينار واستقبل الطلبات على واتساب، بدون إيجار وبدون بناء موقع.',
+      tag: 'دليل',
+      body: `
+<p>لا تحتاج إلى موقع إلكتروني أو مبرمج أو محل مستأجر لتبدأ البيع أونلاين في الكويت. مع سوق مثل ماي بوتيكي يمكنك تجهيز متجرك خلال عشر دقائق تقريباً.</p>
+<h2>1. أنشئ متجرك</h2>
+<p>سجّل بالبريد الإلكتروني أو جوجل أو آبل، واختر اسم متجرك واسم المستخدم (سيصبح رابط متجرك مثل <b>myboutiki.com/@yourshop</b>) ودولتك ورقم هاتفك للواتساب.</p>
+<h2>2. اجعل ملفك احترافياً</h2>
+<ul><li>ضع شعارك كصورة للملف.</li><li>اكتب نبذة قصيرة: ماذا تبيع، ومناطق التوصيل، وأوقات العمل.</li><li>أضف رابط إنستغرام أو موقعك.</li></ul>
+<h2>3. أضف أول منتجاتك</h2>
+<p>اضغط <b>بيع</b> وأضف حتى 10 صور وعنواناً ووصفاً والقسم. السعر اختياري، وإذا تركته فارغاً يظهر للمشتري «اسأل عن السعر» ويراسلك مباشرة.</p>
+<h2>4. استقبل الطلبات</h2>
+<p>يمكن للمشتري مراسلتك داخل التطبيق (نص وصور ورسائل صوتية) أو الاتصال بك أو إرسال رسالة واتساب واحدة بكل المنتجات في السلة، وتتفق معه مباشرة على الدفع والتوصيل.</p>
+<h2>5. اجعل الناس يجدونك</h2>
+<p>لكل منتج صفحة خاصة يمكن لجوجل فهرستها. شارك منتجاتك في ستوري إنستغرام وواتساب وإكس وفيسبوك بلمسة، وروّج أفضل منتجاتك لتظهر أولاً.</p>
+${cta.ar}`,
+    },
+  },
+  {
+    slug: 'sell-perfume-online-kuwait',
+    date: '2026-11-27',
+    img: '/img/blog-gifts.jpg',
+    en: {
+      title: 'How to sell perfume and gift sets online in Kuwait',
+      desc: 'Tips to sell perfumes, oud and gift boxes online in Kuwait and the Gulf: photos that sell, honest descriptions, pricing in KWD, gift seasons and WhatsApp orders.',
+      tag: 'Tips',
+      body: `
+<p>Perfume, oud and gift boxes are some of the most popular gifts in the Gulf. Here is how to present them so buyers trust you and order.</p>
+<h2>Photograph the bottle and the box</h2>
+<ul><li>Shoot on a clean, light background with soft daylight.</li><li>Show the full set first, then each bottle, the box and any extras.</li><li>Keep photos sharp — avoid filters that change the colour of the liquid.</li></ul>
+<h2>Describe it honestly</h2>
+<p>Mention the size (ml), concentration (eau de parfum, oud, attar), the scent notes, whether it is new and sealed, and exactly what is included in a gift set.</p>
+<h2>Price clearly</h2>
+<p>Show the price in KWD (myboutiki converts it for buyers in other Gulf countries). If prices change often, leave the price empty so buyers ask you on chat.</p>
+<h2>Plan for gift seasons</h2>
+<p>Ramadan, Eid, Valentine’s, Mother’s Day and National Day are peak times. Post new gift sets a week before, and boost them to the top of Home and Explore.</p>
+<h2>Make ordering easy</h2>
+<p>Say your delivery areas and times in your bio. Buyers can message, call or send one WhatsApp order with the whole cart.</p>
+${cta.en}`,
+    },
+    ar: {
+      title: 'كيف تبيع العطور وأطقم الهدايا أونلاين في الكويت',
+      desc: 'نصائح لبيع العطور والعود وبوكسات الهدايا أونلاين في الكويت والخليج: صور تبيع، ووصف صادق، وتسعير بالدينار، ومواسم الهدايا، وطلبات واتساب.',
+      tag: 'نصائح',
+      body: `
+<p>العطور والعود وبوكسات الهدايا من أكثر الهدايا طلباً في الخليج. إليك طريقة عرضها ليثق المشتري ويطلب.</p>
+<h2>صوّر العبوة والبوكس</h2>
+<ul><li>صوّر على خلفية فاتحة ونظيفة مع ضوء النهار.</li><li>اعرض الطقم كاملاً أولاً، ثم كل عبوة والبوكس والإضافات.</li><li>اجعل الصور واضحة وتجنّب الفلاتر التي تغيّر لون العطر.</li></ul>
+<h2>اكتب وصفاً صادقاً</h2>
+<p>اذكر الحجم (مل) والتركيز (أو دو بارفان، عود، دهن) والمكوّنات العطرية، وهل هو جديد ومغلّف، وماذا يحتوي طقم الهدية بالضبط.</p>
+<h2>سعّر بوضوح</h2>
+<p>اكتب السعر بالدينار الكويتي، وماي بوتيكي يحوّله للمشترين في دول الخليج الأخرى. وإذا كانت الأسعار تتغيّر كثيراً اترك السعر فارغاً ليسألك المشتري في المحادثة.</p>
+<h2>استعد لمواسم الهدايا</h2>
+<p>رمضان والعيد والفالنتاين وعيد الأم والعيد الوطني أوقات ذروة. انشر أطقم الهدايا الجديدة قبلها بأسبوع، وروّجها لتظهر أعلى الرئيسية والاستكشاف.</p>
+<h2>سهّل الطلب</h2>
+<p>اذكر مناطق وأوقات التوصيل في البايو. يمكن للمشتري مراسلتك أو الاتصال بك أو إرسال طلب واتساب واحد بكل السلة.</p>
+${cta.ar}`,
+    },
+  },
+  {
+    slug: 'product-photos-with-your-phone',
+    date: '2026-11-27',
+    img: '/img/blog-shoes.jpg',
+    en: {
+      title: 'Take product photos that sell — with just your phone',
+      desc: 'Simple phone photography tips for online sellers: light, background, angles, details and how many photos to post for clothes, shoes, watches and perfume.',
+      tag: 'Tips',
+      body: `
+<p>Good photos sell more than long descriptions. You don’t need a camera — your phone is enough.</p>
+<h2>Use daylight</h2><p>Stand near a window in the morning or afternoon. Turn off the flash and ceiling lights to avoid yellow colours.</p>
+<h2>Keep the background simple</h2><p>A white wall, a sheet or a wooden floor works well. Remove anything that distracts from the product.</p>
+<h2>Show every angle</h2><ul><li>Front, back and side.</li><li>Close-ups: fabric, stitching, logo, sole, clasp or dial.</li><li>The item worn or in use, so buyers see the real size.</li></ul>
+<h2>Post several photos</h2><p>On myboutiki you can add up to 10 photos per item, crop them, change the order and choose the cover photo.</p>
+<h2>Be honest</h2><p>Show any marks or wear clearly. Honest photos mean fewer returns and better reviews.</p>
+${cta.en}`,
+    },
+    ar: {
+      title: 'صوّر منتجاتك بجوالك صوراً تبيع',
+      desc: 'نصائح تصوير بسيطة للبائعين أونلاين بالجوال: الإضاءة، والخلفية، والزوايا، والتفاصيل، وعدد الصور المناسب للملابس والأحذية والساعات والعطور.',
+      tag: 'نصائح',
+      body: `
+<p>الصور الجيدة تبيع أكثر من الوصف الطويل، ولا تحتاج إلى كاميرا، فجوالك يكفي.</p>
+<h2>استخدم ضوء النهار</h2><p>قف قرب النافذة صباحاً أو عصراً، وأطفئ الفلاش وإضاءة السقف لتجنّب الألوان الصفراء.</p>
+<h2>اجعل الخلفية بسيطة</h2><p>جدار أبيض أو قماش أو أرضية خشبية مناسبة. أبعد أي شيء يشتّت النظر عن المنتج.</p>
+<h2>اعرض كل الزوايا</h2><ul><li>الأمام والخلف والجانب.</li><li>لقطات قريبة: القماش، والخياطة، والشعار، والنعل، والقفل أو ميناء الساعة.</li><li>المنتج أثناء اللبس أو الاستخدام ليعرف المشتري حجمه الحقيقي.</li></ul>
+<h2>انشر عدة صور</h2><p>في ماي بوتيكي يمكنك إضافة حتى 10 صور لكل منتج، وقصّها، وتغيير ترتيبها، واختيار صورة الغلاف.</p>
+<h2>كن صادقاً</h2><p>أظهر أي آثار استخدام بوضوح. الصور الصادقة تعني مرتجعات أقل وتقييمات أفضل.</p>
+${cta.ar}`,
+    },
+  },
+  {
+    slug: 'sell-abayas-online-gulf',
+    date: '2026-11-27',
+    img: '/img/abaya.jpg',
+    en: {
+      title: 'Selling abayas online in the Gulf: a simple guide for home designers',
+      desc: 'How abaya designers and home sellers can sell online across Kuwait, Saudi Arabia, the UAE, Bahrain, Qatar and Oman: sizes, fabrics, photos, made-to-order and WhatsApp orders.',
+      tag: 'Guide',
+      body: `
+<p>Many of the best abayas in the Gulf are designed at home. Selling online lets you reach buyers in every Gulf country without a shop.</p>
+<h2>List sizes and fabric clearly</h2><p>Write the available lengths (for example 52 to 60), the fabric (crepe, nida, linen, chiffon), the embroidery or lace details, and whether it comes with a matching sheila.</p>
+<h2>Show it worn</h2><p>Add at least one photo of the abaya being worn, plus close-ups of the embroidery, sleeves and trims.</p>
+<h2>Say if it is ready or made to order</h2><p>If you tailor to measurements, state the preparation time, for example “Ready in 5 days”.</p>
+<h2>Use highlights</h2><p>Group your collections in highlights such as “New collection”, “Ramadan” and “Feedback”, so buyers can browse quickly.</p>
+<h2>Sell across the Gulf</h2><p>Prices show in each buyer’s currency. Mention which countries you deliver to in your bio.</p>
+${cta.en}`,
+    },
+    ar: {
+      title: 'بيع العبايات أونلاين في الخليج: دليل بسيط للمصممات من البيت',
+      desc: 'كيف تبيع مصممات العبايات والبائعات من البيت أونلاين في الكويت والسعودية والإمارات والبحرين وقطر وعُمان: المقاسات والأقمشة والصور والتفصيل وطلبات واتساب.',
+      tag: 'دليل',
+      body: `
+<p>كثير من أجمل العبايات في الخليج تُصمَّم في البيت، والبيع أونلاين يوصلك للمشترين في كل دول الخليج بدون محل.</p>
+<h2>اكتبي المقاسات والقماش بوضوح</h2><p>اذكري الأطوال المتوفرة (مثلاً من 52 إلى 60) ونوع القماش (كريب، ندى، كتان، شيفون) وتفاصيل التطريز أو الدانتيل، وهل تأتي مع شيلة.</p>
+<h2>اعرضيها ملبوسة</h2><p>أضيفي صورة واحدة على الأقل للعباية ملبوسة، ولقطات قريبة للتطريز والأكمام والأطراف.</p>
+<h2>وضّحي إن كانت جاهزة أو تفصيل</h2><p>إذا كنتِ تفصّلين على المقاس، اذكري مدة التجهيز مثل «جاهزة خلال 5 أيام».</p>
+<h2>استخدمي الهايلايت</h2><p>رتّبي مجموعاتك في هايلايت مثل «مجموعة جديدة» و«رمضان» و«آراء العملاء» ليتصفّح المشتري بسرعة.</p>
+<h2>بيعي في كل الخليج</h2><p>الأسعار تظهر بعملة كل مشترٍ، واذكري الدول التي توصلين لها في البايو.</p>
+${cta.ar}`,
+    },
+  },
 ];

@@ -326,7 +326,7 @@ for out in ['index.html','ar/index.html']:
     t=t.replace('<noscript>',f'<script type="application/ld+json">{json.dumps(il,ensure_ascii=False)}</script><script type="application/ld+json">{json.dumps(sa,ensure_ascii=False)}</script><noscript>',1)
     open(p,'w').write(t)
 # sitemap with products, shops and images
-urls=[('/','daily','1.0',None),('/ar/','daily','1.0',None),('/about/','monthly','0.7',None),('/ar/about/','monthly','0.7',None)]
+urls=[('/','daily','1.0',None),('/ar/','daily','1.0',None),('/about/','monthly','0.7',None),('/ar/about/','monthly','0.7',None)]+[(p,'yearly','0.3',None) for p in ('/privacy/','/terms/','/support/','/delete-account/')]
 import re as _re
 _slugs=_re.findall(r"slug: '([a-z0-9-]+)'",open('/home/claude/web/src/blog/posts.js').read())
 urls+=[('/blog/','weekly','0.8',None),('/ar/blog/','weekly','0.8',None)]+[(f'/blog/{x}/','monthly','0.8',None) for x in _slugs]+[(f'/ar/blog/{x}/','monthly','0.8',None) for x in _slugs]
