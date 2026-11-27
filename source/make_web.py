@@ -171,7 +171,7 @@ for(const s of j.stores){let r=Object.values(REG).find(x=>x.handle===s.handle&&x
 Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',fc:s.fc,fg:s.fg,srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
 const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(rm.has(String(P[i].id))){P.splice(i,1)}}
 for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;if(sp.top)x.top=sp.top;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
-P.sort((a,b)=>b.at-a.at);fwInit();return j}
+P.sort((a,b)=>b.at-a.at);fwInit();msgPull();return j}
 const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
 const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp,x.cur,x.po]);
 function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
@@ -211,6 +211,9 @@ R("function fwLoad(h){}","function fwLoad(h){fetch(API+'/api/follows?h='+encodeU
 R("function fwPush(t,on){}","function fwPush(t,on){const h=me();if(!h||!SYNC.uid||!isMine(h))return;api(on?'PUT':'DELETE','/api/follows/'+encodeURIComponent(t)+'?from='+encodeURIComponent(h)).catch(()=>{})}")
 R("function fwRemove(f){}","function fwRemove(f){const h=me();if(!h||!SYNC.uid||!isMine(h))return;api('DELETE','/api/follows/'+encodeURIComponent(f)+'?from='+encodeURIComponent(h)+'&remove=1').catch(()=>{})}")
 R("if(r&&(!S.user||regKey(r)!==regKey(S.user))){S.user=r;","if(r&&(!S.user||regKey(r)!==regKey(S.user))){S.user=r;if(isMine(r.handle)){S.follow=new Set();S.followOf=r.handle;setTimeout(fwInit,0)}")
+# real messages between shops (server)
+R("function msgPush(c,m){}","function msgPush(c,m){const h=me();if(!SYNC.uid||!isMine(h)||!m)return;api('POST','/api/messages',{from:h,to:other(c),text:m.t,pid:c.pid||null}).then(j=>{m.sid=j.message.id;queueSave()}).catch(e=>{if(e.code===404||e.code===429)toast(e.message)})}")
+R("function msgClear(list){}","function msgClear(list){const h=me();if(!SYNC.uid||!isMine(h))return;api('POST','/api/messages/clear',list?{h,with:list}:{h,all:true}).catch(()=>{})}\nlet MSGL={};async function msgPull(){const h=me();if(!SYNC.uid||!h||!isMine(h))return;try{const j=await api('GET','/api/messages?h='+encodeURIComponent(h)+'&since='+(MSGL[h]||0));let got=0;for(const r of j.messages||[]){MSGL[h]=Math.max(MSGL[h]||0,r.id);const o=r.f===h?r.t:r.f;const c=chatWith(o,r.pid?(isNaN(+r.pid)?r.pid:+r.pid):undefined);if(c.m.some(x=>x.sid===r.id))continue;const loc=r.f===h&&c.m.find(x=>!x.sid&&x.f===h&&x.t===r.text);if(loc){loc.sid=r.id;continue}c.m.push({f:r.f,t:r.text,at:r.at,sid:r.id});c.m.sort((a,b)=>a.at-b.at);if(r.f!==h)got++}if(got){queueSave();const f=S.stack[S.stack.length-1];if(f&&f.k==='chat')rerenderChat(f.u);else if(!document.activeElement?.matches('input,textarea'))render(true)}}catch(_){}}\nsetInterval(()=>{if(document.visibilityState==='visible')msgPull()},8000);")
 # admin switch to hide the sample shops
 R("function applyCfg(c){if(!c||!c.verified)return;","function applyCfg(c){if(!c||!c.verified)return;if(c.showSamples===false){for(let i=P.length-1;i>=0;i--)if(P[i].id<100&&!P[i].remote&&['noor.abayas','cheetah.watches','q8.menswear','thepinkstore'].includes(P[i].s))P.splice(i,1)}")
 

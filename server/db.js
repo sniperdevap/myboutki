@@ -18,7 +18,9 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
     CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, handle TEXT NOT NULL, data TEXT NOT NULL, at INTEGER, updated INTEGER, deleted INTEGER DEFAULT 0, deleted_by TEXT);
     CREATE INDEX IF NOT EXISTS posts_handle ON posts(handle);
     CREATE TABLE IF NOT EXISTS follows (f TEXT NOT NULL, t TEXT NOT NULL, at INTEGER, PRIMARY KEY (f, t));
-    CREATE INDEX IF NOT EXISTS follows_t ON follows(t);`);
+    CREATE INDEX IF NOT EXISTS follows_t ON follows(t);
+    CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, f TEXT NOT NULL, t TEXT NOT NULL, text TEXT NOT NULL, pid TEXT, at INTEGER NOT NULL, hid_f INTEGER DEFAULT 0, hid_t INTEGER DEFAULT 0);
+    CREATE INDEX IF NOT EXISTS messages_f ON messages(f, at); CREATE INDEX IF NOT EXISTS messages_t ON messages(t, at);`);
   const q = sql => db.prepare(sql);
   const J = s => { try { return JSON.parse(s); } catch (_) { return {}; } };
 
@@ -102,6 +104,32 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(h)) }, origin), true;
     }
     let m;
+    // ---------- direct messages between shops ----------
+    const mine = async h => { const u = await auth(); if (!u) return null; return q('SELECT 1 FROM stores WHERE handle=? AND uid=? AND banned=0').get(String(h || '').toLowerCase(), u.uid) ? u : null; };
+    if (p === '/api/messages' && req.method === 'GET') {
+      const h = String(url.searchParams.get('h') || '').toLowerCase(), since = Math.max(0, +url.searchParams.get('since') || 0);
+      if (!(await mine(h))) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      const rows = q('SELECT id,f,t,text,pid,at FROM messages WHERE ((f=? AND hid_f=0) OR (t=? AND hid_t=0)) AND id>? ORDER BY id LIMIT 1000').all(h, h, since);
+      return json(res, 200, { messages: rows }, origin), true;
+    }
+    if (p === '/api/messages' && req.method === 'POST') {
+      const b = await readBody(req), f = String(b.from || '').toLowerCase(), t = String(b.to || '').toLowerCase(), text = clean(b.text, 2000).trim();
+      const u = await mine(f); if (!u) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      if (!text || !HANDLE.test(t) || t === f) return json(res, 400, { error: 'Message not sent' }, origin), true;
+      if (!q('SELECT 1 FROM stores WHERE handle=? AND banned=0').get(t)) return json(res, 404, { error: 'This shop can only be reached on WhatsApp' }, origin), true;
+      if (q('SELECT COUNT(*) n FROM messages WHERE f=? AND at>?').get(f, Date.now() - 60e3).n >= 30) return json(res, 429, { error: 'Slow down a little' }, origin), true;
+      const pid = b.pid ? String(b.pid).replace(/[^0-9a-zA-Z_-]/g, '').slice(0, 40) : null, at = Date.now();
+      const r = q('INSERT INTO messages(f,t,text,pid,at) VALUES(?,?,?,?,?)').run(f, t, text, pid, at);
+      return json(res, 200, { ok: true, message: { id: Number(r.lastInsertRowid), f, t, text, pid, at } }, origin), true;
+    }
+    if (p === '/api/messages/clear' && req.method === 'POST') {
+      const b = await readBody(req), h = String(b.h || '').toLowerCase();
+      if (!(await mine(h))) return json(res, 401, { error: 'Please sign in again' }, origin), true;
+      const list = b.all ? null : (Array.isArray(b.with) ? b.with : []).map(x => String(x).toLowerCase()).filter(x => HANDLE.test(x)).slice(0, 500);
+      if (list === null) { q('UPDATE messages SET hid_f=1 WHERE f=?').run(h); q('UPDATE messages SET hid_t=1 WHERE t=?').run(h); }
+      else for (const o of list) { q('UPDATE messages SET hid_f=1 WHERE f=? AND t=?').run(h, o); q('UPDATE messages SET hid_t=1 WHERE t=? AND f=?').run(h, o); }
+      return json(res, 200, { ok: true }, origin), true;
+    }
     // sitemap of shop items; Google Search boosts are listed first with today's date so Google re-reads them daily
     if (p === '/api/sitemap.xml' && req.method === 'GET') {
       const now = Date.now(), day = new Date().toISOString().slice(0, 10), esc = v => String(v).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
