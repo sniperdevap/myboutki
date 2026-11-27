@@ -115,7 +115,7 @@ R("app.innerHTML=S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=S.stage
 # 5. deep links + language from URL
 R("try{restore(st)}catch(_){}\nconst fromPay=","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
-{const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
+{const qq=new URLSearchParams(location.search).get('q');if(qq){S.tab='explore';S.q=qq.slice(0,60)}}{const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
 const fromPay=""")
 R("let i18nQ=0;","document.documentElement.lang=S.lang;let i18nQ=0;") if "let i18nQ=0;" in s else None
 open('/tmp/app_web.html','w').write(s)
@@ -145,8 +145,8 @@ d.update({"Couldn't sign in with Google. Please try again.":"تعذّر تسجي
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
 
 # 7. SPEED: fonts don't block the first paint; no 3 MB full icon font
-s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Playfair[^"]+)" rel="stylesheet">',r'<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="\1"></noscript>',s,count=1)
-s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Material\+Symbols[^"]+)" rel="stylesheet">',r'<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel=\'stylesheet\';document.documentElement.classList.add(\'icok\')">',s,count=1)
+s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Playfair[^"]+)" rel="stylesheet">',r"""<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="\1"></noscript>""",s,count=1)
+s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Material\+Symbols[^"]+)" rel="stylesheet">',r"""<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel='stylesheet';document.documentElement.classList.add('icok')">""",s,count=1)
 assert 'onload="this.onload=null;this.rel' in s
 R("</style>","html:not(.icok) .ms{color:transparent!important}\n</style>")
 R("setTimeout(()=>(window.requestIdleCallback||setTimeout)(lateFont),2500);","")
@@ -192,4 +192,67 @@ open(os.path.join(WEB,'public/sitemap.xml'),'w').write('''<?xml version="1.0" en
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 '''+''.join(f'''<url><loc>https://myboutki.com{a}</loc><xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{e_}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com{r}"/><changefreq>daily</changefreq><priority>{pr}</priority></url>
 ''' for a,e_,r,pr in [('/','/','/ar/','1.0'),('/ar/','/','/ar/','1.0'),('/about/','/about/','/ar/about/','0.8'),('/ar/about/','/about/','/ar/about/','0.8')])+'</urlset>\n')
+
+# ---- SEO pages for every product and shop (also give WhatsApp/Instagram a photo preview)
+PROD=json.load(open('/home/claude/build/products.json'))
+def kwd(v): return f"KWD {v:,.3f}"
+def page(path,title,desc,img,url,ld,extra_meta='',noscript=''):
+    e=html.escape
+    h=f"""<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="{url}">
+<meta property="og:site_name" content="myboutki"><meta property="og:url" content="{url}">
+<meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
+<meta property="og:image" content="{img}"><meta property="og:image:alt" content="{e(title)}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{e(title)}"><meta name="twitter:description" content="{e(desc)}"><meta name="twitter:image" content="{img}">
+{extra_meta}
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="apple-touch-icon" href="/img/favicon.png"><link rel="manifest" href="/manifest.webmanifest">
+<script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
+<noscript><style>.stage{{display:none}}</style>{noscript}</noscript>"""
+    t=s.replace('<title>myboutki app preview</title>',h,1)
+    p=os.path.join(WEB,'public',path.strip('/'),'index.html');os.makedirs(os.path.dirname(p),exist_ok=True);open(p,'w').write(t)
+SITE='https://myboutki.com'
+shops={}
+for x in PROD:
+    url=x['link'];path=url.replace(SITE,'');img=SITE+x['img']
+    title=f"{x['h']} – {kwd(x['p'])} | {x['shop']} on myboutki"
+    desc=f"{x['d']} Order on WhatsApp from {x['shop']} (@{x['s']}). Product code {x['code']}."[:300]
+    ld=[{"@context":"https://schema.org","@type":"Product","name":x['h'],"description":x['d'],"image":[img],"sku":x['code'],"productID":x['code'],"category":x['c'],
+         "brand":{"@type":"Brand","name":x['shop']},
+         "offers":{"@type":"Offer","url":url,"price":f"{x['p']:.3f}","priceCurrency":"KWD","availability":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition","seller":{"@type":"Organization","name":x['shop'],"url":f"{SITE}/@{x['s']}"}}},
+        {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"myboutki","item":SITE+"/"},{"@type":"ListItem","position":2,"name":x['c'],"item":f"{SITE}/?q={x['c']}"},{"@type":"ListItem","position":3,"name":x['h'],"item":url}]}]
+    meta=f'<meta property="og:type" content="product"><meta property="product:price:amount" content="{x["p"]:.3f}"><meta property="product:price:currency" content="KWD"><meta property="og:locale" content="en_US">'
+    ns=f'<article style="padding:24px;font:16px system-ui"><h1>{html.escape(x["h"])}</h1><p>{html.escape(kwd(x["p"]))} · {html.escape(x["c"])} · Code {x["code"]}</p><img src="{x["img"]}" alt="{html.escape(x["h"])}" width="320"><p>{html.escape(x["d"])}</p><p>Sold by <a href="/@{x["s"]}">{html.escape(x["shop"])}</a></p></article>'
+    page(path,title,desc,img,url,ld,meta,ns)
+    shops.setdefault(x['s'],{'name':x['shop'],'items':[]})['items'].append(x)
+for h,v in shops.items():
+    url=f"{SITE}/@{h}";first=v['items'][0];img=SITE+first['img']
+    cats=sorted({i['c'] for i in v['items']})
+    title=f"{v['name']} (@{h}) – {', '.join(cats)} shop on myboutki"
+    desc=f"Shop {v['name']} on myboutki: {', '.join(i['h'] for i in v['items'])[:180]}. Order on WhatsApp, delivery across the Gulf."
+    ld=[{"@context":"https://schema.org","@type":"Store","name":v['name'],"url":url,"image":img,"alternateName":"@"+h,"areaServed":["KW","SA","AE","BH","QA","OM"],
+         "makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Product","name":i['h'],"sku":i['code'],"image":SITE+i['img']},"price":f"{i['p']:.3f}","priceCurrency":"KWD","url":i['link']} for i in v['items']]}]
+    ns='<section style="padding:24px;font:16px system-ui"><h1>'+html.escape(v['name'])+'</h1>'+''.join(f'<p><a href="{i["link"].replace(SITE,"")}">{html.escape(i["h"])}</a> – {html.escape(kwd(i["p"]))}</p>' for i in v['items'])+'</section>'
+    page(f"/@{h}",title,desc,img,url,ld,'<meta property="og:type" content="profile">',ns)
+# homepage: list of products for search engines (ItemList) + sitelinks search box
+for out in ['index.html','ar/index.html']:
+    p=os.path.join(WEB,'public',out);t=open(p).read()
+    il={"@context":"https://schema.org","@type":"ItemList","name":"Latest on myboutki","itemListElement":[{"@type":"ListItem","position":n+1,"url":x['link'],"name":x['h']} for n,x in enumerate(PROD)]}
+    sa={"@context":"https://schema.org","@type":"WebSite","url":SITE+"/","name":"myboutki","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":SITE+"/?q={search_term_string}"},"query-input":"required name=search_term_string"}}
+    t=t.replace('<noscript>',f'<script type="application/ld+json">{json.dumps(il,ensure_ascii=False)}</script><script type="application/ld+json">{json.dumps(sa,ensure_ascii=False)}</script><noscript>',1)
+    open(p,'w').write(t)
+# sitemap with products, shops and images
+urls=[('/','daily','1.0',None),('/ar/','daily','1.0',None),('/about/','monthly','0.7',None),('/ar/about/','monthly','0.7',None)]
+urls+=[(x['link'].replace(SITE,''),'weekly','0.8',SITE+x['img']) for x in PROD]
+urls+=[(f'/@{h}','weekly','0.7',SITE+v['items'][0]['img']) for h,v in shops.items()]
+sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
+for u,f,pr,img in urls:
+    alt=''
+    if u in ('/','/ar/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://myboutki.com/"/>'
+    if u in ('/about/','/ar/about/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/about/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/about/"/>'
+    sm+=f'<url><loc>{SITE}{html.escape(u)}</loc>{alt}{f"<image:image><image:loc>{img}</image:loc></image:image>" if img else ""}<changefreq>{f}</changefreq><priority>{pr}</priority></url>\n'
+open(os.path.join(WEB,'public/sitemap.xml'),'w').write(sm+'</urlset>\n')
+open(os.path.join(WEB,'public/robots.txt'),'w').write('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /pay/\n\nSitemap: https://myboutki.com/sitemap.xml\n')
 print('pages written')
