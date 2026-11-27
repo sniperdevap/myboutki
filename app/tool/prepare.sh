@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# release: signed builds (Android upload key from CI secrets)
 # Creates the Android/iOS project folders and applies myboutiki settings.
 # Run from anywhere: bash app/tool/prepare.sh
 set -euo pipefail
