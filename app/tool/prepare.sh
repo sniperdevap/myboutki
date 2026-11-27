@@ -18,6 +18,19 @@ sed -i.bak -E 's/android:label="[^"]*"/android:label="myboutiki"/' "$M"
 grep -q 'android.permission.INTERNET' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$M"
 grep -q 'RECORD_AUDIO' "$M" || sed -i.bak 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO"/>\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>\n    <application#' "$M"
 
+# Some plugins (file_picker) still compile against an older Android SDK; build every plugin against SDK 36
+RG=android/build.gradle.kts
+if [ -f "$RG" ] && ! grep -q 'mbCompileSdk' "$RG"; then cat >> "$RG" <<'KTS'
+
+// mbCompileSdk: plugins must compile against Android 36 (required by flutter_plugin_android_lifecycle)
+subprojects {
+    val mbFix = { p: Project -> p.extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)?.let { if ((it.compileSdk ?: 0) < 36) it.compileSdk = 36 } }
+    if (state.executed) mbFix(this) else afterEvaluate { mbFix(this) }
+}
+KTS
+fi
+sed -i.bak -E 's/compileSdk *=? *flutter\.compileSdkVersion/compileSdk = 36/' "$G"
+
 # Release signing with the Play upload key (only when the key is provided as CI secrets)
 if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
   echo "$ANDROID_KEYSTORE_B64" | base64 -d > android/app/upload.jks
