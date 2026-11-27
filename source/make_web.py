@@ -233,10 +233,10 @@ def head(lang):
 <link rel="alternate" hreflang="x-default" href="https://myboutki.com/">
 <meta property="og:type" content="website"><meta property="og:site_name" content="myboutki">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg?v=2">
+<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg?v=3">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="{'ar_KW' if ar else 'en_US'}">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg?v=2">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg?v=3">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#17212b" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2">

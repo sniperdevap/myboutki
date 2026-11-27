@@ -178,7 +178,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
         title = `${d.name} (@${r.handle}) on myboutki`; desc = (d.bio || `Shop ${d.name} on myboutki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutki.com/@${r.handle}`;
         ld = { '@context': 'https://schema.org', '@type': 'Store', name: d.name, url: link };
       }
-      const abs = img ? 'https://myboutki.com' + img : 'https://myboutki.com/img/og.jpg';
+      const abs = img ? 'https://myboutki.com' + img : 'https://myboutki.com/img/og.jpg?v=3';
       html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${e(title)}</title>`)
         .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(desc)}">`)
         .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${link}">`)
