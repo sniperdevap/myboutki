@@ -153,6 +153,12 @@ class _ShellState extends State<Shell> {
       case 'apple':
         await _appleSignIn();
         break;
+      case 'shareimg':
+        try {
+          final bytes = base64Decode('${m['data'] ?? ''}');
+          await Share.shareXFiles([XFile.fromData(bytes, mimeType: 'image/jpeg', name: '${m['name'] ?? 'myboutiki.jpg'}')], text: '${m['text'] ?? ''}');
+        } catch (_) {}
+        break;
       case 'open':
         final u = Uri.tryParse('${m['url'] ?? ''}');
         if (u != null && (u.scheme == 'https' || u.scheme == 'http')) await launchUrl(u, mode: LaunchMode.externalApplication);
