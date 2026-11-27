@@ -11,7 +11,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
   for (const d of [IMG, PRIV]) fs.mkdirSync(d, { recursive: true });
   try { fs.chmodSync(DATA, 0o711); fs.chmodSync(IMG, 0o755); fs.chmodSync(PRIV, 0o700); } catch (_) {}
 
-  const db = new DatabaseSync(path.join(DATA, 'myboutiki.db'));
+  const db = new DatabaseSync(path.join(DATA, 'myboutki.db'));
   db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=3000;
     CREATE TABLE IF NOT EXISTS stores (handle TEXT PRIMARY KEY, uid TEXT NOT NULL, email TEXT, data TEXT NOT NULL, created INTEGER, updated INTEGER, banned INTEGER DEFAULT 0);
     CREATE INDEX IF NOT EXISTS stores_uid ON stores(uid);
