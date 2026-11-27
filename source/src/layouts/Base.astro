@@ -5,13 +5,13 @@ const {
   path = '/',
   jsonld = [],
   lang = 'en',
-  image = 'https://myboutki.com/img/og.jpg?v=4',
+  image = 'https://myboutiki.com/img/og.jpg?v=4',
   ogType = 'website',
 } = Astro.props;
-const url = new URL(path, 'https://myboutki.com').href;
+const url = new URL(path, 'https://myboutiki.com').href;
 const enPath = path.replace(/^\/ar\//, '/');
-const enUrl = new URL(enPath, 'https://myboutki.com').href;
-const arUrl = new URL('/ar' + enPath, 'https://myboutki.com').href;
+const enUrl = new URL(enPath, 'https://myboutiki.com').href;
+const arUrl = new URL('/ar' + enPath, 'https://myboutiki.com').href;
 ---
 <!doctype html>
 <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}>

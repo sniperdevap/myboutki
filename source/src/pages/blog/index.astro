@@ -1,7 +1,7 @@
 ---
 import Blog from '../../layouts/Blog.astro';
 import { posts } from '../../blog/posts.js';
-const SITE = 'https://myboutki.com';
+const SITE = 'https://myboutiki.com';
 const jsonld = [{ '@context': 'https://schema.org', '@type': 'Blog', name: 'myboutiki blog', url: SITE + '/blog/', inLanguage: 'en',
   blogPost: posts.map(p => ({ '@type': 'BlogPosting', headline: p.en.title, url: `${SITE}/blog/${p.slug}/`, datePublished: p.date, image: SITE + p.img })) }];
 ---

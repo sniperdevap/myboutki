@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-const SITE = 'https://myboutki.com';
+const SITE = 'https://myboutiki.com';
 const cats = ['Apparel','Accessories','Watches','Derma Beauty','Bath & Body','Eyewear','Contact Lenses','Footwear','Electronics','Home & Living','Sports','Other'];
 const countries = ['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'];
 const shots = [['/img/abaya.jpg','Black abaya with gold lace trim for sale on myboutiki'],['/img/watch.jpg','Steel GMT watch listed by a verified shop'],['/img/polo.jpg','Green knit polo from a Kuwait menswear shop'],['/img/bag.jpg','Burgundy leather shoulder bag for sale']];
@@ -24,7 +24,7 @@ const faq = [
   ['When does myboutiki launch?','myboutiki is coming soon on the web, iPhone and Android. Follow this page for the launch.'],
 ];
 const jsonld = [
-  { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['English','Arabic']}},
+  { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutiki.com','areaServed':countries,'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutiki.com','availableLanguage':['English','Arabic']}},
   { '@context':'https://schema.org','@type':'WebSite','name':'myboutiki','url':SITE,'inLanguage':['en','ar'],'description':'A social media marketplace for sellers in the Gulf to sell online without renting a shop.'},
   { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutiki','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','description':'Open your own online shop, post items with photos and sell on WhatsApp without paying rent for a store.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':SITE},
   { '@context':'https://schema.org','@type':'FAQPage','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
@@ -95,7 +95,7 @@ const jsonld = [
     </div>
   </section>
 </main>
-<footer><p>© {new Date().getFullYear()} myboutiki — the social marketplace for sellers in the Gulf.</p><p>Need help? <a href="mailto:support@myboutki.com">support@myboutki.com</a></p></footer>
+<footer><p>© {new Date().getFullYear()} myboutiki — the social marketplace for sellers in the Gulf.</p><p>Need help? <a href="mailto:support@myboutiki.com">support@myboutiki.com</a></p></footer>
 </Base>
 <style is:global>
   :root{color-scheme:light;--ink:#111;--muted:#6f6f6f;--gold:#b8913e;--soft:#f8f6f1;--line:#ece8df}

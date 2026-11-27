@@ -163,8 +163,8 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
       const g = x => x.d.top && x.d.top.google && x.d.top.google.until > now;
       rows.sort((a, b) => g(b) - g(a));
       const stores = q('SELECT handle, updated FROM stores WHERE banned=0').all();
-      const urls = rows.map(({ r, d }) => `<url><loc>https://myboutki.com/p/${esc(r.id)}</loc><lastmod>${g({ d }) ? day : new Date(r.updated || r.at || now).toISOString().slice(0, 10)}</lastmod>${g({ d }) ? '<changefreq>daily</changefreq><priority>1.0</priority>' : '<priority>0.6</priority>'}${d.imgs && d.imgs[0] && /^\/u\//.test(d.imgs[0]) ? `<image:image><image:loc>https://myboutki.com${esc(d.imgs[0])}</image:loc></image:image>` : ''}</url>`)
-        .concat(stores.map(s => `<url><loc>https://myboutki.com/@${esc(s.handle)}</loc><lastmod>${new Date(s.updated || now).toISOString().slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
+      const urls = rows.map(({ r, d }) => `<url><loc>https://myboutiki.com/p/${esc(r.id)}</loc><lastmod>${g({ d }) ? day : new Date(r.updated || r.at || now).toISOString().slice(0, 10)}</lastmod>${g({ d }) ? '<changefreq>daily</changefreq><priority>1.0</priority>' : '<priority>0.6</priority>'}${d.imgs && d.imgs[0] && /^\/u\//.test(d.imgs[0]) ? `<image:image><image:loc>https://myboutiki.com${esc(d.imgs[0])}</image:loc></image:image>` : ''}</url>`)
+        .concat(stores.map(s => `<url><loc>https://myboutiki.com/@${esc(s.handle)}</loc><lastmod>${new Date(s.updated || now).toISOString().slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
       res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
       res.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${urls.join('')}</urlset>`);
       return true;
@@ -238,14 +238,14 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutiki', SAMPLE_HANDLES =
       let title, desc, img, link, ld;
       if (m[2]) { const r = q('SELECT p.*, s.data sd FROM posts p JOIN stores s ON s.handle=p.handle WHERE p.id=? AND p.deleted=0 AND s.banned=0').get(m[2]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; }
         const d = J(r.data), sd = J(r.sd), dec = { KWD: 3, BHD: 3, OMR: 3 }[d.cur] ?? 2, price = d.cur && d.po != null ? d.cur + ' ' + (+d.po).toFixed(d.cur ? dec : 3) : 'KWD ' + (+d.p || 0).toFixed(3), noPrice = !(+d.p > 0) && !(+d.po > 0);
-        title = `${d.h}${noPrice ? '' : ' – ' + price} | ${sd.name || r.handle} on myboutiki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutki.com/p/${r.id}`;
-        ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.h, description: d.d, image: (d.imgs || []).map(u => 'https://myboutki.com' + u), category: d.c, offers: noPrice ? undefined : { '@type': 'Offer', url: link, price: d.cur && d.po != null ? (+d.po).toFixed(dec) : (+d.p || 0).toFixed(3), priceCurrency: d.cur && d.po != null ? d.cur : 'KWD', availability: d.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } };
+        title = `${d.h}${noPrice ? '' : ' – ' + price} | ${sd.name || r.handle} on myboutiki`; desc = `${d.d} Order on WhatsApp from @${r.handle}.`.slice(0, 300); img = d.imgs && d.imgs[0]; link = `https://myboutiki.com/p/${r.id}`;
+        ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.h, description: d.d, image: (d.imgs || []).map(u => 'https://myboutiki.com' + u), category: d.c, offers: noPrice ? undefined : { '@type': 'Offer', url: link, price: d.cur && d.po != null ? (+d.po).toFixed(dec) : (+d.p || 0).toFixed(3), priceCurrency: d.cur && d.po != null ? d.cur : 'KWD', availability: d.sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } };
       } else { const r = q('SELECT * FROM stores WHERE handle=? AND banned=0').get(m[3]); if (!r) { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }); res.end(html); return true; } const d = J(r.data);
         const first = q('SELECT data FROM posts WHERE handle=? AND deleted=0 ORDER BY at DESC LIMIT 1').get(r.handle);
-        title = `${d.name} (@${r.handle}) on myboutiki`; desc = (d.bio || `Shop ${d.name} on myboutiki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutki.com/@${r.handle}`;
+        title = `${d.name} (@${r.handle}) on myboutiki`; desc = (d.bio || `Shop ${d.name} on myboutiki. Order on WhatsApp.`).slice(0, 300); img = d.avatar || (first && (J(first.data).imgs || [])[0]); link = `https://myboutiki.com/@${r.handle}`;
         ld = { '@context': 'https://schema.org', '@type': 'Store', name: d.name, url: link };
       }
-      const abs = img ? 'https://myboutki.com' + img : 'https://myboutki.com/img/og.jpg?v=4';
+      const abs = img ? 'https://myboutiki.com' + img : 'https://myboutiki.com/img/og.jpg?v=4';
       html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${e(title)}</title>`)
         .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(desc)}">`)
         .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${link}">`)

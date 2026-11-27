@@ -18,7 +18,7 @@ const hashPass = pw => { const salt = crypto.randomBytes(16).toString('hex'); re
 
 const API = process.env.MF_API_URL || 'https://api.myfatoorah.com';
 const KEY = process.env.MF_API_KEY || '';
-const SITE = process.env.SITE_URL || 'https://myboutki.com';
+const SITE = process.env.SITE_URL || 'https://myboutiki.com';
 const SESSION_JS = process.env.MF_SESSION_JS || 'https://portal.myfatoorah.com/sessions/v1/session.js';
 const SESS = new Map();
 const makeDb = require('./db.js');
@@ -74,7 +74,7 @@ const makeSession = () => { const exp = Date.now() + 7 * 864e5, v = 'admin.' + e
 const isAdmin = req => { const m = /(?:^|;\s*)mb_admin=([^;]+)/.exec(req.headers.cookie || ''); if (!m) return false; const parts = decodeURIComponent(m[1]).split('.'); if (parts.length !== 3) return false; const v = parts[0] + '.' + parts[1], sig = sign(v); return +parts[1] > Date.now() && sig.length === parts[2].length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(parts[2])); };
 const checkPass = pw => { const a = readAdmin(); if (!a) return false; const [alg, salt, hash] = String(a.hash || '').split('$'); if (alg !== 'scrypt' || !salt || !hash) return false; const h = crypto.scryptSync(String(pw), salt, 64).toString('hex'); return crypto.timingSafeEqual(Buffer.from(h), Buffer.from(hash)); };
 const loginTries = new Map();
-const ORIGINS = new Set([SITE, 'https://www.myboutki.com']);
+const ORIGINS = new Set([SITE, 'https://www.myboutiki.com', 'https://myboutki.com', 'https://www.myboutki.com']);
 const PRODUCTS = new Proxy({}, { get: (_, k) => products()[k], ownKeys: () => Object.keys(products()), getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }) });
 const json = (res, code, body, origin) => {
   const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };

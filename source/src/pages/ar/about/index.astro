@@ -1,6 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
-const SITE = 'https://myboutki.com';
+const SITE = 'https://myboutiki.com';
 const cats = ['الملابس','الإكسسوارات','الساعات','العناية بالبشرة','الاستحمام والعناية','النظارات','العدسات اللاصقة','الأحذية','الإلكترونيات','المنزل والمعيشة','الرياضة','أخرى'];
 const countries = ['الكويت','السعودية','الإمارات','البحرين','قطر','عُمان'];
 const shots = [['/img/abaya.jpg','عباية سوداء بتطريز ذهبي للبيع على ماي بوتيكي'],['/img/watch.jpg','ساعة GMT فولاذية من متجر موثّق'],['/img/polo.jpg','قميص بولو أخضر من متجر ملابس رجالية في الكويت'],['/img/bag.jpg','حقيبة كتف جلدية عنابية للبيع']];
@@ -24,7 +24,7 @@ const faq = [
   ['متى يُطلق ماي بوتيكي؟','ماي بوتيكي قادم قريباً على الويب وأجهزة iPhone وأندرويد. تابع هذه الصفحة لموعد الإطلاق.'],
 ];
 const jsonld = [
-  { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','alternateName':'ماي بوتيكي','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutki.com','areaServed':['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'],'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutki.com','availableLanguage':['Arabic','English']}},
+  { '@context':'https://schema.org','@type':'Organization','name':'myboutiki','alternateName':'ماي بوتيكي','url':SITE,'logo':`${SITE}/img/favicon.png?v=2`,'email':'support@myboutiki.com','areaServed':['Kuwait','Saudi Arabia','UAE','Bahrain','Qatar','Oman'],'contactPoint':{'@type':'ContactPoint','contactType':'customer support','email':'support@myboutiki.com','availableLanguage':['Arabic','English']}},
   { '@context':'https://schema.org','@type':'WebSite','name':'ماي بوتيكي','url':`${SITE}/ar/`,'inLanguage':'ar','description':'سوق إلكتروني بأسلوب التواصل الاجتماعي للبائعين في الخليج للبيع أونلاين بدون إيجار محل.'},
   { '@context':'https://schema.org','@type':'MobileApplication','name':'myboutiki','alternateName':'ماي بوتيكي','operatingSystem':'iOS, Android','applicationCategory':'ShoppingApplication','inLanguage':'ar','description':'افتح متجرك الخاص وانشر منتجاتك بالصور وبِع عبر واتساب بدون إيجار محل.','offers':{'@type':'Offer','price':'0','priceCurrency':'USD'},'url':`${SITE}/ar/`},
   { '@context':'https://schema.org','@type':'FAQPage','inLanguage':'ar','mainEntity':faq.map(([q,a])=>({'@type':'Question','name':q,'acceptedAnswer':{'@type':'Answer','text':a}}))},
@@ -71,7 +71,7 @@ const jsonld = [
     {faq.map(([q,a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
   </div></section>
 </main>
-<footer><p>© {new Date().getFullYear()} ماي بوتيكي — السوق الاجتماعي للبائعين في الخليج.</p><p>تحتاج مساعدة؟ <a href="mailto:support@myboutki.com" dir="ltr">support@myboutki.com</a></p></footer>
+<footer><p>© {new Date().getFullYear()} ماي بوتيكي — السوق الاجتماعي للبائعين في الخليج.</p><p>تحتاج مساعدة؟ <a href="mailto:support@myboutiki.com" dir="ltr">support@myboutiki.com</a></p></footer>
 </Base>
 <style is:global>
   :root{color-scheme:light;--ink:#111;--muted:#6f6f6f;--gold:#b8913e;--soft:#f8f6f1;--line:#ece8df}

@@ -14,6 +14,6 @@ services:
     environment:
       - MF_API_KEY=${MF_API_KEY}
       - MF_API_URL=https://api.myfatoorah.com
-      - SITE_URL=https://myboutki.com
+      - SITE_URL=https://myboutiki.com
       - DATA_DIR=/data
       - SETUP_CODE_SHA256=${SETUP_CODE_SHA256}

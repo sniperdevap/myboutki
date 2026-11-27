@@ -5,5 +5,5 @@ Allow: /api/sitemap.xml
 Disallow: /api/
 Disallow: /pay/
 
-Sitemap: https://myboutki.com/sitemap.xml
-Sitemap: https://myboutki.com/api/sitemap.xml
+Sitemap: https://myboutiki.com/sitemap.xml
+Sitemap: https://myboutiki.com/api/sitemap.xml

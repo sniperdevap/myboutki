@@ -3,7 +3,7 @@ import Blog from '../../layouts/Blog.astro';
 import { posts } from '../../blog/posts.js';
 export function getStaticPaths() { return posts.map(p => ({ params: { slug: p.slug }, props: { p } })); }
 const { p } = Astro.props;
-const SITE = 'https://myboutki.com', url = `${SITE}/blog/${p.slug}/`;
+const SITE = 'https://myboutiki.com', url = `${SITE}/blog/${p.slug}/`;
 const jsonld = [
   { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: p.en.title, description: p.en.desc, image: SITE + p.img, datePublished: p.date, dateModified: p.date, inLanguage: 'en', mainEntityOfPage: url,
     author: { '@type': 'Organization', name: 'myboutiki', url: SITE }, publisher: { '@type': 'Organization', name: 'myboutiki', logo: { '@type': 'ImageObject', url: SITE + '/img/favicon.png?v=2' } } },

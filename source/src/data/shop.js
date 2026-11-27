@@ -1,4 +1,4 @@
-export const SITE = 'https://myboutki.com';
+export const SITE = 'https://myboutiki.com';
 export const CATS = ['Bath & Body','Eyewear','Contact Lenses','Apparel','Footwear','Sports','Derma Beauty','Electronics','Home & Living','Accessories','Watches','Other'];
 export const SHOPS = {
   'noor.abayas':    { name:'Noor Abayas',     avatar:'/img/av_noor.jpg',    verified:false, bio:'Apparel shop in Kuwait\n🚚 Delivery across the Gulf\n💬 Message or WhatsApp to order' },

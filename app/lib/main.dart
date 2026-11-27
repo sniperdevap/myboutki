@@ -1,4 +1,4 @@
-// myboutiki app — shows the live myboutki.com app, so the website and the
+// myboutiki app — shows the live myboutiki.com app, so the website and the
 // phone apps are always the same and every update appears everywhere at once.
 // Native parts: splash, icon, back button, photo picker, sharing, WhatsApp /
 // phone / email links, offline screen, and native Google / Apple sign-in
@@ -19,11 +19,11 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-const String kHome = 'https://myboutki.com/';
+const String kHome = 'https://myboutiki.com/';
 // Hosts that stay inside the app. Everything else opens outside (WhatsApp, maps, etc).
 const List<String> kInside = [
-  'myboutki.com',
-  'www.myboutki.com',
+  'myboutiki.com',
+  'www.myboutiki.com',
   'portal.myfatoorah.com',
   'demo.myfatoorah.com',
   'myboutki.firebaseapp.com',

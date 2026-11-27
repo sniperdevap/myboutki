@@ -100,7 +100,7 @@ const meRow=u?`<div class="row" style="gap:12px;margin-bottom:22px"><button data
 :`<div class="rcard"><div style="font-weight:600;font-size:15px;margin-bottom:4px">Open your shop on myboutiki</div><p class="muted" style="font-size:13px;margin:0 0 12px">Post items, get orders on WhatsApp. No shop rent.</p><button class="pri w" data-a="tab" data-t="sell" style="height:40px">Start selling</button></div>`;
 return `<aside class="rail">${meRow}<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="muted" style="font-weight:600;font-size:14px">Suggested shops</span><button data-a="tab" data-t="explore" style="font-size:12px;font-weight:600">See all</button></div>
 ${shops.map(h=>{const f=S.follow.has(h);return `<div class="row" style="gap:12px;padding:7px 0"><button data-a="seller" data-s="${esc(h)}">${av(h,44)}</button><button data-a="seller" data-s="${esc(h)}" style="flex:1;min-width:0;text-align:start"><div class="row" style="gap:3px;font-weight:600;font-size:14px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h)}</span>${VB(h,14)}</div><div class="muted" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nameOf(h))}</div></button><button data-a="follow" data-s="${esc(h)}" style="font-size:12px;font-weight:600;color:${f?'var(--ink)':FOLLOW}">${f?'Following':'Follow'}</button></div>`}).join('')}
-<div style="margin-top:22px"><div class="muted" style="font-weight:600;font-size:13px;margin-bottom:8px">Get the app</div>${storeBtns()}</div><div class="rlinks"><a href="${S.lang==='ar'?'/ar/blog/':'/blog/'}">Blog</a> · <a href="/about/">About</a> · <a href="${S.lang==='ar'?'/':'/ar/'}" data-notr>${S.lang==='ar'?'English':'العربية'}</a> · <a href="mailto:support@myboutki.com">Support</a> · <a href="/sitemap.xml">Sitemap</a><div style="margin-top:12px" data-notr dir="ltr">© ${new Date().getFullYear()} MYBOUTKI · Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman</div></div></aside>`}
+<div style="margin-top:22px"><div class="muted" style="font-weight:600;font-size:13px;margin-bottom:8px">Get the app</div>${storeBtns()}</div><div class="rlinks"><a href="${S.lang==='ar'?'/ar/blog/':'/blog/'}">Blog</a> · <a href="/about/">About</a> · <a href="${S.lang==='ar'?'/':'/ar/'}" data-notr>${S.lang==='ar'?'English':'العربية'}</a> · <a href="mailto:support@myboutiki.com">Support</a> · <a href="/sitemap.xml">Sitemap</a><div style="margin-top:12px" data-notr dir="ltr">© ${new Date().getFullYear()} MYBOUTKI · Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman</div></div></aside>`}
 function stories(){""")
 
 # 4. preview banner (honest: no real accounts yet)
@@ -125,7 +125,7 @@ print('ok',len(s))
 # 6. REAL Google sign-in with Firebase Auth (website only)
 R("case 'google':S.stage='pick';render();break;","case 'google':fbGoogle(el);break;")
 R("case 'logout':S.menu=false;","case 'logout':fbOut();S.menu=false;")
-R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutki\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutiki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
+R("async function boot(){",r"""const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutik?i\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutiki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
 const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
 function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
@@ -236,23 +236,23 @@ def head(lang):
     title='ماي بوتيكي — تسوّق وبِع من متاجر الخليج' if ar else 'myboutiki — Shop and sell with your community | Gulf social marketplace'
     desc=('ماي بوتيكي سوق بأسلوب إنستغرام في الخليج: تصفّح منتجات المتاجر المحلية، احفظ ما يعجبك، واطلب مباشرة عبر واتساب. افتح متجرك بدون إيجار محل — الكويت والسعودية والإمارات والبحرين وقطر وعُمان.' if ar else
           'myboutiki is an Instagram-style marketplace for the Gulf. Browse items from local shops, save favourites and order straight on WhatsApp. Open your own shop without renting a store — Kuwait, Saudi Arabia, UAE, Bahrain, Qatar and Oman.')
-    url='https://myboutki.com/ar/' if ar else 'https://myboutki.com/'
-    ld=[{"@context":"https://schema.org","@type":"WebSite","name":"myboutiki","alternateName":"ماي بوتيكي","url":"https://myboutki.com/","inLanguage":["en","ar"]},
-        {"@context":"https://schema.org","@type":"Organization","name":"myboutiki","url":"https://myboutki.com/","logo":"https://myboutki.com/img/favicon.png?v=2","email":"support@myboutki.com","areaServed":["KW","SA","AE","BH","QA","OM"]}]
+    url='https://myboutiki.com/ar/' if ar else 'https://myboutiki.com/'
+    ld=[{"@context":"https://schema.org","@type":"WebSite","name":"myboutiki","alternateName":"ماي بوتيكي","url":"https://myboutiki.com/","inLanguage":["en","ar"]},
+        {"@context":"https://schema.org","@type":"Organization","name":"myboutiki","url":"https://myboutiki.com/","logo":"https://myboutiki.com/img/favicon.png?v=2","email":"support@myboutiki.com","areaServed":["KW","SA","AE","BH","QA","OM"]}]
     e=html.escape
     return f'''<title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="{url}">
-<link rel="alternate" hreflang="en" href="https://myboutki.com/">
-<link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/">
-<link rel="alternate" hreflang="x-default" href="https://myboutki.com/">
+<link rel="alternate" hreflang="en" href="https://myboutiki.com/">
+<link rel="alternate" hreflang="ar" href="https://myboutiki.com/ar/">
+<link rel="alternate" hreflang="x-default" href="https://myboutiki.com/">
 <meta property="og:type" content="website"><meta property="og:site_name" content="myboutiki">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">
-<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutki.com/img/og.jpg?v=4">
+<meta property="og:url" content="{url}"><meta property="og:image" content="https://myboutiki.com/img/og.jpg?v=4">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta property="og:locale" content="{'ar_KW' if ar else 'en_US'}">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutki.com/img/og.jpg?v=4">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://myboutiki.com/img/og.jpg?v=4">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#17212b" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutiki">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg?v=2"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png?v=2"><link rel="apple-touch-icon" href="/img/favicon.png?v=2">
@@ -268,7 +268,7 @@ for f in ['av_pink.jpg','av_cheetah.jpg','av_diamond.jpg','av_noor.jpg']:
 open(os.path.join(WEB,'public/manifest.webmanifest'),'w').write(json.dumps({"name":"myboutiki","short_name":"myboutiki","start_url":"/","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"/img/favicon.png?v=2","sizes":"512x512","type":"image/png"}]}))
 open(os.path.join(WEB,'public/sitemap.xml'),'w').write('''<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-'''+''.join(f'''<url><loc>https://myboutki.com{a}</loc><xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{e_}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com{r}"/><changefreq>daily</changefreq><priority>{pr}</priority></url>
+'''+''.join(f'''<url><loc>https://myboutiki.com{a}</loc><xhtml:link rel="alternate" hreflang="en" href="https://myboutiki.com{e_}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutiki.com{r}"/><changefreq>daily</changefreq><priority>{pr}</priority></url>
 ''' for a,e_,r,pr in [('/','/','/ar/','1.0'),('/ar/','/','/ar/','1.0'),('/about/','/about/','/ar/about/','0.8'),('/ar/about/','/about/','/ar/about/','0.8')])+'</urlset>\n')
 
 # ---- SEO pages for every product and shop (also give WhatsApp/Instagram a photo preview)
@@ -291,7 +291,7 @@ def page(path,title,desc,img,url,ld,extra_meta='',noscript=''):
 <noscript><style>.stage{{display:none}}</style>{noscript}</noscript>"""
     t=s.replace('<title>myboutiki app preview</title>',h,1)
     p=os.path.join(WEB,'public',path.strip('/'),'index.html');os.makedirs(os.path.dirname(p),exist_ok=True);open(p,'w').write(t)
-SITE='https://myboutki.com'
+SITE='https://myboutiki.com'
 shops={}
 for x in PROD:
     url=x['link'];path=url.replace(SITE,'');img=SITE+x['img']
@@ -331,11 +331,11 @@ urls+=[(f'/@{h}','weekly','0.7',SITE+v['items'][0]['img']) for h,v in shops.item
 sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
 for u,f,pr,img in urls:
     alt=''
-    if u in ('/','/ar/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://myboutki.com/"/>'
+    if u in ('/','/ar/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutiki.com/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutiki.com/ar/"/><xhtml:link rel="alternate" hreflang="x-default" href="https://myboutiki.com/"/>'
     if u.startswith('/blog/') or u.startswith('/ar/blog/'):
-        en=u.replace('/ar/blog/','/blog/');alt=f'<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com{en}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar{en}"/>'
-    if u in ('/about/','/ar/about/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutki.com/about/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutki.com/ar/about/"/>'
+        en=u.replace('/ar/blog/','/blog/');alt=f'<xhtml:link rel="alternate" hreflang="en" href="https://myboutiki.com{en}"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutiki.com/ar{en}"/>'
+    if u in ('/about/','/ar/about/'): alt='<xhtml:link rel="alternate" hreflang="en" href="https://myboutiki.com/about/"/><xhtml:link rel="alternate" hreflang="ar" href="https://myboutiki.com/ar/about/"/>'
     sm+=f'<url><loc>{SITE}{html.escape(u)}</loc>{alt}{f"<image:image><image:loc>{img}</image:loc></image:image>" if img else ""}<changefreq>{f}</changefreq><priority>{pr}</priority></url>\n'
 open(os.path.join(WEB,'public/sitemap.xml'),'w').write(sm+'</urlset>\n')
-open(os.path.join(WEB,'public/robots.txt'),'w').write('User-agent: *\nAllow: /\nDisallow: /admin/\nAllow: /api/sitemap.xml\nDisallow: /api/\nDisallow: /pay/\n\nSitemap: https://myboutki.com/sitemap.xml\nSitemap: https://myboutki.com/api/sitemap.xml\n')
+open(os.path.join(WEB,'public/robots.txt'),'w').write('User-agent: *\nAllow: /\nDisallow: /admin/\nAllow: /api/sitemap.xml\nDisallow: /api/\nDisallow: /pay/\n\nSitemap: https://myboutiki.com/sitemap.xml\nSitemap: https://myboutiki.com/api/sitemap.xml\n')
 print('pages written')
