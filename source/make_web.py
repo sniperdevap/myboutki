@@ -137,12 +137,19 @@ fbAccount(r.user)}catch(e){if(!/popup-closed|cancelled-popup/.test(e&&e.code||''
 function fbOut(){fbLoad().then(({U,auth})=>U.signOut(auth)).catch(()=>{})}
 async function fbRedirectResult(){if(S.user)return;try{const {U,auth}=await fbLoad(),r=await U.getRedirectResult(auth);if(r&&r.user)fbAccount(r.user)}catch(_){}}
 async function boot(){""")
-R("applyLang();render();payReturn();","applyLang();render();payReturn();fbRedirectResult();(window.requestIdleCallback||setTimeout)(()=>fbLoad().catch(()=>{}),{timeout:1500});")
+R("applyLang();render();payReturn();","applyLang();render();payReturn();fbRedirectResult();{const warm=()=>{removeEventListener('pointerdown',warm,true);fbLoad().catch(()=>{})};addEventListener('pointerdown',warm,true);setTimeout(()=>(window.requestIdleCallback||setTimeout)(warm),6000)}")
 # finish: remember the Google uid on the account
 R("case 'finish':{","case 'finish':{if(S.pending&&S.pending.uid)S.pendingUid=S.pending.uid;")
 m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
 d.update({"Couldn't sign in with Google. Please try again.":"تعذّر تسجيل الدخول عبر Google. حاول مرة أخرى.","Opening Google…":"جارٍ فتح Google…"})
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
+
+# 7. SPEED: fonts don't block the first paint; no 3 MB full icon font
+s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Playfair[^"]+)" rel="stylesheet">',r'<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="\1"></noscript>',s,count=1)
+s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Material\+Symbols[^"]+)" rel="stylesheet">',r'<link rel="preload" as="style" href="\1" onload="this.onload=null;this.rel=\'stylesheet\';document.documentElement.classList.add(\'icok\')">',s,count=1)
+assert 'onload="this.onload=null;this.rel' in s
+R("</style>","html:not(.icok) .ms{color:transparent!important}\n</style>")
+R("setTimeout(()=>(window.requestIdleCallback||setTimeout)(lateFont),2500);","")
 
 # ---- write pages into the Astro public folder with SEO heads
 import html
@@ -171,7 +178,7 @@ def head(lang):
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="myboutki">
 <link rel="icon" type="image/svg+xml" href="/img/mark.svg"><link rel="icon" type="image/png" sizes="512x512" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/favicon.png">
-<link rel="manifest" href="/manifest.webmanifest">\n<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"><link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="manifest" href="/manifest.webmanifest">\n<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <script type="application/ld+json">{json.dumps(ld,ensure_ascii=False)}</script>
 <noscript><style>.stage{{display:none}}</style><p style="padding:24px;font:16px system-ui">{'ماي بوتيكي يحتاج إلى تفعيل JavaScript.' if ar else 'myboutki needs JavaScript turned on.'} <a href="{'/ar/about/' if ar else '/about/'}">{'عن ماي بوتيكي' if ar else 'About myboutki'}</a></p></noscript>'''
 for lang,out in [('en','index.html'),('ar','ar/index.html')]:
