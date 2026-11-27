@@ -228,7 +228,7 @@ http.createServer(async (req, res) => {
       const list = Array.isArray(b) ? b.slice(0, 20) : [b];
       const day = new Date().toISOString().slice(0, 10), vid = crypto.createHash('sha256').update(SECRET + day + ip + (req.headers['user-agent'] || '')).digest('hex').slice(0, 12);
       const mob = /Mobi|Android|iPhone/i.test(req.headers['user-agent'] || '');
-      for (const e of list) { if (!e || typeof e.e !== 'string') continue; logTo('events.jsonl', { t: Date.now(), v: vid, m: mob ? 1 : 0, e: clean(e.e, 30), k: clean(e.k, 80), c: clean(e.c, 40), s: clean(e.s, 40), l: clean(e.l, 4), cc: clean(e.cc, 4) }); }
+      for (const e of list) { if (!e || typeof e.e !== 'string') continue; logTo('events.jsonl', { t: Date.now(), v: vid, m: mob ? 1 : 0, e: clean(e.e, 30), k: clean(e.k, 80), c: clean(e.c, 40), s: clean(e.s, 40), l: clean(e.l, 4), cc: clean(e.cc, 4), src: clean(e.src, 12) }); }
       return json(res, 204, null, origin);
     }
 
@@ -245,7 +245,8 @@ http.createServer(async (req, res) => {
       return json(res, 200, { days, visitors: new Set(ev.map(e => e.v)).size, itemViews: ev.filter(e => e.e === 'item').length, shopVisits: ev.filter(e => e.e === 'shop').length,
         whatsapp: taps(['wa', 'wact', 'waask', 'shwa']), carts: taps('add'), shares: taps(['share', 'igopen', 'copylink']), likes: taps('like'),
         daily: Object.entries(byDay).map(([d, o]) => ({ d, views: o.views, visitors: o.visitors.size })),
-        top: Object.entries(items).sort((a, z) => z[1] - a[1]).slice(0, 5) }, origin);
+        top: Object.entries(items).sort((a, z) => z[1] - a[1]).slice(0, 5),
+        sources: (() => { const first = {}; for (const e of ev) if (!(e.v in first)) first[e.v] = e.src || 'direct'; const o = {}; for (const k of Object.values(first)) o[k] = (o[k] || 0) + 1; return o; })() }, origin);
     }
 
     // ---- admin (login required) ----
