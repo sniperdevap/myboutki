@@ -73,7 +73,8 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
  .nav .badge{left:30px!important;right:auto!important}
  .side-brand{display:flex;align-items:center;gap:2px;padding:4px 12px 30px;text-decoration:none;color:var(--ink)}
  .sheetwrap{left:244px!important}
- #app[data-v=auth]{display:flex!important;flex-direction:column;width:100%;max-width:460px;margin:0 auto;border-inline:1px solid var(--line)}
+ #app[data-v=auth]>.bar{grid-column:2;grid-row:1;justify-self:center;width:100%;max-width:460px;border:0}
+ #app[data-v=auth]>.body{grid-column:2;grid-row:2 / -1;justify-self:center;width:100%;max-width:460px;overflow:auto}
  #app[data-v=auth]~.sheetwrap,#app[data-v=auth] .sheetwrap{left:0!important}
  .sheet{max-width:560px;margin-inline:auto;border-radius:20px 20px 0 0}
 }
@@ -86,7 +87,7 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
 R("</style>",WEBCSS+"</style>")
 # nav: brand + text labels (translated via data-l set in JS)
 R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg?v=2" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
-R('class="${S.tab===t?\'on\':\'\'}" aria-label="${l}">','class="${S.tab===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
+R('class="${cur===t?\'on\':\'\'}" aria-label="${l}">','class="${cur===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
 
 # 3b. wide desktop layout: right rail on feed, view-aware widths
 R("if(S.tab==='feed')return [","if(S.tab==='feed')return [")
@@ -111,7 +112,7 @@ d.update({"iOS & Android apps coming soon":"تطبيقات iOS وأندرويد 
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
 R("app.innerHTML=(S.pvOff?","app.dataset.v=S.stage!=='none'?'auth':(S.stack.length?S.stack[S.stack.length-1].k:S.tab);app.innerHTML=(S.pvOff?")
 R("(typeof n==='string'?n:'')","(typeof n==='string'&&n?`<div class=\"xfoot\">${n}</div>`:'')")
-R("app.innerHTML=S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=S.stage==='setup'?")
+R("app.innerHTML=(S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=(S.stage==='setup'?")
 # 5. deep links + language from URL
 R("try{restore(st)}catch(_){}\nconst fromPay=","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';

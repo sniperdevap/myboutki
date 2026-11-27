@@ -31,11 +31,14 @@ const PORT = +process.env.PORT || 8080;
 const DEFAULT_CONFIG = {
   verified: { monthlyUsd: 18, yearlyUsd: 180, monthlyKwd: 5.5, yearlyKwd: 55 },
   boost: { usdToKwd: 0.31, minDaily: 1, maxDaily: 100, days: [1, 3, 7, 14, 30] },
+  placements: { google: { usd: 5, days: 7 }, explore: { usd: 12, days: 7 }, home: { usd: 12, days: 7 } },
   showSamples: true,
 };
 const CFG_FILE = path.join(DATA, 'config.json');
 let CONFIG = DEFAULT_CONFIG;
 try { CONFIG = { ...DEFAULT_CONFIG, ...JSON.parse(fs.readFileSync(CFG_FILE, 'utf8')) }; } catch (_) {}
+if (!CONFIG.placements) CONFIG.placements = DEFAULT_CONFIG.placements;
+const PLACES = ['google', 'explore', 'home'];
 const num = (v, lo, hi) => { v = +v; return Number.isFinite(v) && v >= lo && v <= hi ? Math.round(v * 1000) / 1000 : null; };
 function setConfig(c) {
   const v = c.verified || {}, b = c.boost || {};
@@ -45,6 +48,8 @@ function setConfig(c) {
   };
   for (const g of ['verified', 'boost']) for (const [k, val] of Object.entries(next[g])) if (val === null || (Array.isArray(val) && !val.length)) throw new Error('Check ' + g + ' ' + k);
   if (next.boost.minDaily > next.boost.maxDaily) throw new Error('Minimum daily budget is above the maximum');
+  const pl = c.placements || CONFIG.placements || DEFAULT_CONFIG.placements; next.placements = {};
+  for (const k of PLACES) { const o = pl[k] || DEFAULT_CONFIG.placements[k]; const u = num(o.usd, 0.5, 10000), d = num(o.days, 1, 365); if (u === null || d === null) throw new Error('Check ' + k + ' price and days'); next.placements[k] = { usd: u, days: Math.round(d) }; }
   next.showSamples = c.showSamples === undefined ? CONFIG.showSamples !== false : !!c.showSamples;
   CONFIG = next; fs.writeFileSync(CFG_FILE, JSON.stringify(CONFIG, null, 2));
 }
@@ -119,7 +124,13 @@ http.createServer(async (req, res) => {
       if (limited(ip)) return json(res, 429, { error: 'Too many attempts. Try again in a few minutes.' }, origin);
       const b = await readBody(req), embedded = url.pathname === '/api/pay/session';
       let p = PRODUCTS[b.product], extra = [];
-      if (b.product === 'boost') {
+      if (b.product === 'boost' && PLACES.includes(b.placement)) {
+        const cc = [...new Set((Array.isArray(b.countries) ? b.countries : []).filter(c => GCC.includes(c)))];
+        const goal = GOALS.includes(b.goal) ? b.goal : 'views', pc = CONFIG.placements[b.placement];
+        if (!cc.length) return json(res, 400, { error: 'Pick at least one country' }, origin);
+        p = { name: { google: 'Google Search', explore: 'Top of Explore', home: 'Top of Home' }[b.placement] + ` · ${pc.days} days`, usd: pc.usd, kwd: toKwd(pc.usd), days: pc.days, post: true };
+        extra = [pc.days, 0, cc.join('.'), goal, b.placement];
+      } else if (b.product === 'boost') {
         const daily = Math.round(+b.daily), days = +b.days;
         const cc = [...new Set((Array.isArray(b.countries) ? b.countries : []).filter(c => GCC.includes(c)))];
         const goal = GOALS.includes(b.goal) ? b.goal : 'views';
@@ -197,12 +208,12 @@ http.createServer(async (req, res) => {
       const r = await mf('GET', '/v3/payments/' + id);
       if (!r.ok || !r.j.Data) return json(res, 404, { paid: false, error: 'Payment not found' }, origin);
       const d = r.j.Data, inv = d.Invoice || {}, tr = d.Transaction || {};
-      const [product, handle, post, bDays, bDaily, bCc, bGoal] = String(inv.ExternalIdentifier || '').split('|');
+      const [product, handle, post, bDays, bDaily, bCc, bGoal, bPl] = String(inv.ExternalIdentifier || '').split('|');
       const paid = String(inv.Status).toUpperCase() === 'PAID' && String(tr.Status).toUpperCase() === 'SUCCESS';
       const p = PRODUCTS[product] || (product === 'boost' ? { days: +bDays || 0 } : null);
-      if (paid) { try { DB.applyPaid({ product, handle, post, days: p ? p.days : 0, invoiceId: inv.Id, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null }); } catch (e) { console.error('applyPaid', e.message); } }
+      if (paid) { try { DB.applyPaid({ product, handle, post, days: p ? p.days : 0, invoiceId: inv.Id, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, placement: PLACES.includes(bPl) ? bPl : null }); } catch (e) { console.error('applyPaid', e.message); } }
       if (paid && inv.Id && !paidSeen.has(String(inv.Id))) { paidSeen.add(String(inv.Id)); logTo('payments.jsonl', { t: Date.now(), invoiceId: inv.Id, product, handle, post: post || null, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null, method: tr.PaymentMethod || null }); }
-      return json(res, 200, { paid, status: inv.Status, product, handle, post: post || null, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, days: p ? p.days : 0, invoiceId: inv.Id, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null }, origin);
+      return json(res, 200, { paid, status: inv.Status, product, handle, post: post || null, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, placement: PLACES.includes(bPl) ? bPl : null, paymentId: id, days: p ? p.days : 0, invoiceId: inv.Id, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null }, origin);
     }
     // shops, posts and photos
     if (await DB.handle(req, res, url, { json, readBody, readRaw, isAdmin, origin })) return;

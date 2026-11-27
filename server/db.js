@@ -204,7 +204,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   }
 
   // called by the payment check once MyFatoorah confirms a payment
-  function applyPaid({ product, handle, post, days, invoiceId, daily, countries, goal }) {
+  function applyPaid({ product, handle, post, days, invoiceId, daily, countries, goal, placement }) {
     const now = Date.now();
     if (/^verified-/.test(product || '')) {
       const r = q('SELECT * FROM stores WHERE handle=?').get(handle); if (!r) return;
@@ -215,6 +215,11 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
     } else if (product === 'boost' && post) {
       const r = q('SELECT * FROM posts WHERE id=? AND handle=?').get(String(post), handle); if (!r) return;
       const d = J(r.data), b = d.boost || {}; if ((b.paid || []).includes(String(invoiceId))) return;
+      if (placement) { // fixed-price spots: newest payer goes on top
+        const t = d.top || {}, cur = t[placement] || {}; if ((cur.paid || []).includes(String(invoiceId))) return;
+        t[placement] = { at: now, until: (cur.until > now ? cur.until : now) + days * 864e5, cc: countries || [], paid: [...(cur.paid || []), String(invoiceId)] };
+        d.top = t; q('UPDATE posts SET data=?,updated=? WHERE id=?').run(JSON.stringify(d), now, r.id); return;
+      }
       const from = b.until > now ? b.until : now;
       d.boost = { until: from + days * 864e5, cc: countries || [], daily, goal, paid: [...(b.paid || []), String(invoiceId)] };
       q('UPDATE posts SET data=?,updated=? WHERE id=?').run(JSON.stringify(d), now, r.id);
