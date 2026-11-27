@@ -129,7 +129,7 @@ const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
 function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
 const mine=storesOf(em);if(mine.length){S.user=mine[0];markSigned(S.user);S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
-else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=detectCC();S.stage='setup';render()}}
+else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=0;S.stage='setup';render()}}
 async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.style.pointerEvents='none';el.style.opacity='.75';el.textContent=tr('Opening Google…')}
 try{const {U,auth}=await fbLoad(),pv=new U.GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
 if(innerWidth<900||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){saveNow();await U.signInWithRedirect(auth,pv);return}let r;try{r=await U.signInWithPopup(auth,pv)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||'')){await U.signInWithRedirect(auth,pv);return}throw e}
