@@ -115,7 +115,7 @@ R("app.innerHTML=S.stage==='setup'?","app.dataset.v='auth';app.innerHTML=S.stage
 # 5. deep links + language from URL
 R("try{restore(st)}catch(_){}\nconst fromPay=","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
-{const qq=new URLSearchParams(location.search).get('q');if(qq){S.tab='explore';S.q=qq.slice(0,60)}}{const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
+{const qq=new URLSearchParams(location.search).get('q');if(qq){S.tab='explore';S.q=qq.slice(0,60)}}{const mp=path.match(/\\/p\\/(\\d+)/),ms=path.match(/\\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];else if(mp)S.wantPost=+mp[1];else if(ms)S.wantShop=ms[1];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
 const fromPay=""")
 R("let i18nQ=0;","document.documentElement.lang=S.lang;let i18nQ=0;") if "let i18nQ=0;" in s else None
 open('/tmp/app_web.html','w').write(s)
@@ -150,6 +150,59 @@ s=re.sub(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Material\+Sy
 assert 'onload="this.onload=null;this.rel' in s
 R("</style>","html:not(.icok) .ms{color:transparent!important}\n</style>")
 R("setTimeout(()=>(window.requestIdleCallback||setTimeout)(lateFont),2500);","")
+
+# 8. CENTRAL DATABASE SYNC (website only): shops, posts and photos saved on the server for every device
+R("const taken=u=>{u=u.toLowerCase();return isReserved(u)||","const SRV_TAKEN=new Set();const taken=u=>{u=u.toLowerCase();return SRV_TAKEN.has(u)||isReserved(u)||")
+R("async function boot(){",r"""// ---------- server sync ----------
+const API=PAY_API;let SYNC={on:false,t:0,busy:false,email:'',uid:'',lastPull:0};
+async function fbToken(){try{const {auth}=await fbLoad();if(auth.authStateReady)await auth.authStateReady();const u=auth.currentUser;if(!u)return null;SYNC.email=(u.email||'').toLowerCase();SYNC.uid=u.uid;return await u.getIdToken()}catch(_){return null}}
+async function api(method,path,body,raw){const tok=await fbToken();if(!tok)throw Object.assign(new Error('signin'),{code:401});const r=await fetch(API+path,{method,headers:{Authorization:'Bearer '+tok,...(raw?{'Content-Type':raw.type||'image/jpeg'}:{'Content-Type':'application/json'})},body:raw||(body?JSON.stringify(body):undefined)});let j=null;try{j=await r.json()}catch(_){}if(!r.ok)throw Object.assign(new Error((j&&j.error)||('Error '+r.status)),{code:r.status,j});return j}
+async function upImg(u){if(typeof u!=='string')return null;if(/^\/(u|img)\//.test(u))return u;if(u.startsWith('blob:')){const b=await (await fetch(u)).blob();const j=await api('POST','/api/upload',null,b);return j.url}return null}
+const isMine=h=>Object.values(REG).some(r=>r.handle===h&&r.uid&&r.uid===SYNC.uid);
+function srvStore(s){const ex=Object.values(REG).find(r=>r.handle===s.handle);if(ex&&ex.uid&&ex.uid===SYNC.uid)return ex;const r=ex||{};Object.assign(r,{handle:s.handle,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur,ver:s.ver&&s.ver.status==='active'?{...s.ver}:r.ver&&r.ver.status!=='active'?r.ver:null,srv:1});if(!ex){r.id='srv:'+s.handle;r.email='srv:'+s.handle;REG[r.id]=r}return r}
+async function syncPull(){try{const r=await fetch(API+'/api/feed',{cache:'no-store'});const j=await r.json();if(!j||!j.posts)return;SYNC.lastPull=Date.now();
+const keep=new Set();(j.stores||[]).forEach(s=>{SRV_TAKEN.add(s.handle);srvStore(s)});
+for(const sp of j.posts){keep.add(String(sp.id));if(isMine(sp.s))continue;const x=P.find(p=>String(p.id)===String(sp.id));if(x)Object.assign(x,sp,{remote:1,cm:x.cm||[],l:x.l||0});else P.push({...sp,remote:1,cm:[],l:0})}
+for(let i=P.length-1;i>=0;i--){const x=P[i];if(x.remote&&!keep.has(String(x.id))&&!isMine(x.s))P.splice(i,1)}
+if(S.wantPost&&P.some(p=>p.id===S.wantPost)){S.stack=[{k:'detail',id:S.wantPost}];S.wantPost=0;render();return}if(S.wantShop&&P.some(p=>p.s===S.wantShop)){S.stack=[{k:'seller',s:S.wantShop}];S.wantShop=0;render();return}if(S.stage==='none'&&!document.activeElement?.matches('input,textarea'))render(true)}catch(_){}}
+async function syncMe(){const j=await api('GET','/api/me');SYNC.email=j.user.email;SYNC.uid=j.user.uid;
+for(const s of j.stores){let r=Object.values(REG).find(x=>x.handle===s.handle&&x.email===SYNC.email);if(!r){r=Object.values(REG).find(x=>x.handle===s.handle)||{};if(r.id)delete REG[r.id];r.id=storesOf(SYNC.email).length?SYNC.email+'#'+s.handle:SYNC.email;REG[r.id]=r}
+Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
+const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(rm.has(String(P[i].id))){P.splice(i,1)}}
+for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
+P.sort((a,b)=>b.at-a.at);return j}
+const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
+const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp]);
+function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
+async function syncPush(){if(SYNC.busy||!SYNC.uid){return}SYNC.busy=true;try{
+const mine=Object.values(REG).filter(r=>r.email===SYNC.email&&r.handle);
+for(const r of mine){if(r.syncErr===r.handle)continue;
+ if(!r.srvOk){try{await api('POST','/api/stores',{handle:r.handle,name:r.name,phone:r.phone,k:r.k,cur:r.cur,bio:r.bio||''});r.srvOk=1;r.uid=SYNC.uid;r.srvHandle=r.handle;r._sh=''}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Change your username in Edit profile.')}continue}}
+ if(storeSig(r)!==r._sh){try{const av=r.avatar?await upImg(r.avatar):null;const hl=[];for(const x of r.hl||[])hl.push({...x,cover:x.cover?await upImg(x.cover):null});
+  const old=r.srvHandle||r.handle;const j=await api('PUT','/api/stores/'+encodeURIComponent(old),{handle:r.handle,name:r.name,bio:r.bio,avatar:av,links:r.links||[],hl,k:r.k,phone:r.phone,cur:r.cur});r.srvHandle=j.store.handle;r._sh=storeSig(r)}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Choose another username.')}}}}
+const hs=new Set(mine.filter(r=>r.srvOk).map(r=>r.handle));
+let done=new Set(JSON.parse(localStorage.getItem('mb_synced')||'[]'));
+for(const x of P.filter(p=>hs.has(p.s))){if(x.imgs&&x.imgs.some(u=>typeof u==='string'&&u.startsWith('loading:')))continue;if(postSig(x)===x._sh&&x.synced)continue;
+ try{const imgs=[];for(const u of x.imgs||[]){const v=await upImg(u);if(v)imgs.push(v)}if(!imgs.length)continue;const j=await api('PUT','/api/posts/'+x.id,{s:x.s,h:x.h,d:x.d,p:x.p,c:x.c,imgs,ic:x.ic,bg:x.bg,fg:x.fg,sold:!!x.sold,soldAt:x.soldAt,soldPrice:x.soldPrice,rp:x.rp,at:x.at});x.imgs=imgs;x.synced=1;x._sh=postSig(x);done.add(String(x.id))}catch(e){if(e.code===410){const i=P.indexOf(x);if(i>=0)P.splice(i,1);toast('One of your posts was removed by myboutki')}}}
+for(const id of [...done]){const x=P.find(p=>String(p.id)===id);if(!x||(!hs.has(x.s)&&!isMine(x.s))){if(!x){try{await api('DELETE','/api/posts/'+id)}catch(_){}}done.delete(id)}}
+localStorage.setItem('mb_synced',JSON.stringify([...done]));queueSave()}catch(_){}finally{SYNC.busy=false}}
+async function syncStart(){const tok=await fbToken();if(!tok)return;try{await syncMe();SYNC.on=true;render(true);queueSync()}catch(_){}}
+setInterval(()=>{if(document.visibilityState==='visible'){syncPull();if(SYNC.uid)syncMe().then(()=>render(true)).catch(()=>{})}},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-SYNC.lastPull>15000)syncPull()});
+async function boot(){""")
+# pull on boot; resume sync if Firebase session exists
+R("payReturn();fbRedirectResult();","payReturn();fbRedirectResult();syncPull();setTimeout(()=>syncStart(),400);")
+# after every render: push my changes
+R("function render(keep){queueMicrotask(trkView);","function render(keep){queueMicrotask(trkView);queueSync();")
+# Google sign-in -> load my shops from the server first
+R("function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];","async function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];SYNC.uid=fu.uid;SYNC.email=em;try{await syncMe()}catch(_){}")
+# new store: make sure the username is free on the server before creating it
+R("case 'finish':{","case 'finish':{if(SYNC.uid&&S._hOk!==S.un){const v=S.un;if(/^[a-z0-9._]{3,30}$/.test(v)){fetch(API+'/api/handle?h='+encodeURIComponent(v)).then(r=>r.json()).then(j=>{if(j.available){S._hOk=v;el.click()}else{SRV_TAKEN.add(v);checkUser(true)}}).catch(()=>{S._hOk=v;el.click()});break}}")
+R("const u={name:S.pending.name,email:S.pending.email,handle:S.un,","const u={uid:SYNC.uid||undefined,name:S.pending.name,email:S.pending.email,handle:S.un,")
+# logout: also stop syncing
+R("case 'logout':fbOut();S.menu=false;","case 'logout':fbOut();SYNC.uid='';SYNC.email='';S.menu=false;")
+# admin switch to hide the sample shops
+R("function applyCfg(c){if(!c||!c.verified)return;","function applyCfg(c){if(!c||!c.verified)return;if(c.showSamples===false){for(let i=P.length-1;i>=0;i--)if(P[i].id<100&&!P[i].remote&&['noor.abayas','cheetah.watches','q8.menswear','thepinkstore'].includes(P[i].s))P.splice(i,1)}")
 
 # ---- write pages into the Astro public folder with SEO heads
 import html

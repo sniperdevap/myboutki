@@ -19,6 +19,7 @@ const hashPass = pw => { const salt = crypto.randomBytes(16).toString('hex'); re
 const API = process.env.MF_API_URL || 'https://api.myfatoorah.com';
 const KEY = process.env.MF_API_KEY || '';
 const SITE = process.env.SITE_URL || 'https://myboutki.com';
+const makeDb = require('./db.js');
 const PORT = +process.env.PORT || 8080;
 
 // Everything that can be paid for. Prices are decided here on the server, never by the browser.
@@ -28,6 +29,7 @@ const PORT = +process.env.PORT || 8080;
 const DEFAULT_CONFIG = {
   verified: { monthlyUsd: 18, yearlyUsd: 180, monthlyKwd: 5.5, yearlyKwd: 55 },
   boost: { usdToKwd: 0.31, minDaily: 1, maxDaily: 100, days: [1, 3, 7, 14, 30] },
+  showSamples: true,
 };
 const CFG_FILE = path.join(DATA, 'config.json');
 let CONFIG = DEFAULT_CONFIG;
@@ -41,6 +43,7 @@ function setConfig(c) {
   };
   for (const g of ['verified', 'boost']) for (const [k, val] of Object.entries(next[g])) if (val === null || (Array.isArray(val) && !val.length)) throw new Error('Check ' + g + ' ' + k);
   if (next.boost.minDaily > next.boost.maxDaily) throw new Error('Minimum daily budget is above the maximum');
+  next.showSamples = c.showSamples === undefined ? CONFIG.showSamples !== false : !!c.showSamples;
   CONFIG = next; fs.writeFileSync(CFG_FILE, JSON.stringify(CONFIG, null, 2));
 }
 const products = () => ({
@@ -55,6 +58,7 @@ const toKwd = usd => Math.ceil(usd * CONFIG.boost.usdToKwd * 1000) / 1000;
 // ---- small append-only logs ----
 const logTo = (f, o) => fs.appendFile(path.join(DATA, f), JSON.stringify(o) + '\n', () => {});
 const readLog = (f, since) => { try { return fs.readFileSync(path.join(DATA, f), 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch (_) { return null; } }).filter(o => o && (!since || o.t >= since)); } catch (_) { return []; } };
+const DB = makeDb({ DATA, SAMPLE_HANDLES: ['noor.abayas', 'cheetah.watches', 'q8.menswear', 'thepinkstore'] });
 const paidSeen = new Set(readLog('payments.jsonl').map(p => String(p.invoiceId)));
 
 // ---- admin login (signed cookie) ----
@@ -69,7 +73,7 @@ const json = (res, code, body, origin) => {
   const h = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
   if (origin && (ORIGINS.has(origin) || /^https:\/\/[a-z0-9-]+\.claudeusercontent\.com$/.test(origin))) {
     h['Access-Control-Allow-Origin'] = origin; h['Vary'] = 'Origin';
-    h['Access-Control-Allow-Headers'] = 'Content-Type'; h['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+    h['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'; h['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
   }
   res.writeHead(code, h); res.end(body === null ? '' : JSON.stringify(body));
 };
@@ -82,9 +86,10 @@ const mf = async (method, path, body) => {
   return { ok: r.ok && j && j.IsSuccess, status: r.status, j };
 };
 const readBody = req => new Promise((ok, no) => {
-  let s = ''; req.on('data', c => { s += c; if (s.length > 10000) { no(new Error('too big')); req.destroy(); } });
+  let s = ''; req.on('data', c => { s += c; if (s.length > 60000) { no(new Error('too big')); req.destroy(); } });
   req.on('end', () => { try { ok(s ? JSON.parse(s) : {}); } catch (e) { no(e); } });
 });
+const readRaw = (req, max) => new Promise((ok, no) => { const parts = []; let n = 0; req.on('data', c => { n += c.length; if (n > max) { no(new Error('too big')); req.destroy(); } else parts.push(c); }); req.on('end', () => ok(Buffer.concat(parts))); });
 const clean = (v, n) => String(v || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
 
 // small in-memory rate limit: 20 creates per IP per 10 minutes
@@ -101,7 +106,7 @@ http.createServer(async (req, res) => {
       try { const r = await fetch(API + '/v3/payments/100000', { headers: { Authorization: 'Bearer ' + KEY }, signal: AbortSignal.timeout(15000) }); auth = r.status === 401 || r.status === 403 ? 'rejected' : 'accepted (' + r.status + ')'; } catch (e) { auth = 'unreachable'; }
       let methods = null;
       if (url.searchParams.get('methods') === '1') { try { const r = await fetch(API + '/v2/InitiatePayment', { method: 'POST', headers: { Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ InvoiceAmount: 5, CurrencyIso: 'KWD' }), signal: AbortSignal.timeout(15000) }); const j = await r.json(); methods = j && j.Data && j.Data.PaymentMethods ? j.Data.PaymentMethods.map(m => m.PaymentMethodEn + ' (' + m.PaymentMethodCode + ')') : (j && j.Message) || r.status; } catch (e) { methods = 'error'; } }
-      return json(res, 200, { ok: true, configured: !!KEY, key: auth, methods, products: Object.keys(PRODUCTS) }, origin);
+      return json(res, 200, { ok: true, configured: !!KEY, key: auth, methods, products: Object.keys(PRODUCTS), db: DB.counts() }, origin);
     }
 
     if (url.pathname === '/api/pay/products' && req.method === 'GET')
@@ -152,9 +157,13 @@ http.createServer(async (req, res) => {
       const [product, handle, post, bDays, bDaily, bCc, bGoal] = String(inv.ExternalIdentifier || '').split('|');
       const paid = String(inv.Status).toUpperCase() === 'PAID' && String(tr.Status).toUpperCase() === 'SUCCESS';
       const p = PRODUCTS[product] || (product === 'boost' ? { days: +bDays || 0 } : null);
+      if (paid) { try { DB.applyPaid({ product, handle, post, days: p ? p.days : 0, invoiceId: inv.Id, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null }); } catch (e) { console.error('applyPaid', e.message); } }
       if (paid && inv.Id && !paidSeen.has(String(inv.Id))) { paidSeen.add(String(inv.Id)); logTo('payments.jsonl', { t: Date.now(), invoiceId: inv.Id, product, handle, post: post || null, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null, method: tr.PaymentMethod || null }); }
       return json(res, 200, { paid, status: inv.Status, product, handle, post: post || null, daily: +bDaily || null, countries: bCc ? bCc.split('.') : [], goal: bGoal || null, days: p ? p.days : 0, invoiceId: inv.Id, amount: d.Amount ? d.Amount.ValueInBaseCurrency : null, currency: d.Amount ? d.Amount.BaseCurrency : null }, origin);
     }
+    // shops, posts and photos
+    if (await DB.handle(req, res, url, { json, readBody, readRaw, isAdmin, origin })) return;
+
     // public settings for the app and website
     if (url.pathname === '/api/config' && req.method === 'GET') return json(res, 200, CONFIG, origin);
 

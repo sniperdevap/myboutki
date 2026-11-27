@@ -362,7 +362,7 @@ const me=()=>S.user?S.user.handle:'';
 const cartN=()=>Object.values(S.cart).reduce((a,b)=>a+b,0);
 const RESERVED=new Set(['admin','administrator','myboutki','support','help','official','team','staff','moderator','root','api','www','shop','store','null','undefined']);
 const isReserved=u=>RESERVED.has(u)||/myboutki|admin|official|support|moderat/.test(u);
-const taken=u=>{u=u.toLowerCase();return isReserved(u)||P.some(p=>p.s===u)||Object.values(REG).some(r=>r.handle===u)||MEM.some(m=>m.h===u)};
+const SRV_TAKEN=new Set();const taken=u=>{u=u.toLowerCase();return SRV_TAKEN.has(u)||isReserved(u)||P.some(p=>p.s===u)||Object.values(REG).some(r=>r.handle===u)||MEM.some(m=>m.h===u)};
 function suggest(u){const base=u.replace(/[._]+$/,'').slice(0,16)||'user',c=S.ci!=null?CC[S.ci].k.toLowerCase():'kw',out=[];
 for(const v of [base+'.'+c,base+'_'+c,base.replace(/\./g,'_'),base+'.shop',...[1,2,3,7,10,22].map(n=>base+n)])if(v.length>=3&&v.length<=20&&v!==u&&!taken(v)&&!out.includes(v)&&/^[a-z0-9][a-z0-9._]*[a-z0-9]$/.test(v))out.push(v);return out.slice(0,3)}
 const SHOP_AV={'thepinkstore':'/img/av_pink.jpg','cheetah.watches':'/img/av_cheetah.jpg','q8.menswear':'/img/av_diamond.jpg','noor.abayas':'/img/av_noor.jpg'};
@@ -760,7 +760,7 @@ if(S.zoom){S.zoom=null;render(true);return true}if(S.story){S.story=null;clearTi
 if(S.stage!=='none'){S.stage='none';S.pending=null;S.after=null;render();return true}
 if(S.stack.length){const f=S.stack.pop();S.replyTo=null;S.cmDraft='';if(f&&f.k==='edit')S.ed=null;render();return true}
 if(S.tab!=='feed'){S.tab='feed';render();return true}return false}
-function render(keep){queueMicrotask(trkView);
+function render(keep){queueMicrotask(trkView);queueSync();
 const old=document.querySelector('.body'),st=old&&keep?old.scrollTop:0;const key=frameKey(),depth=S.stack.length;
 if(old&&RS.key)SC[RS.key]=old.scrollTop;const dir=keep?null:depth>RS.depth?'push':depth<RS.depth?'back':(S.tab!==RS.tab?'tab':(key!==RS.key?'push':null));RS.key=key;RS.depth=depth;RS.tab=S.tab;
 if(S.stage!=='none'){app.dataset.v='auth';app.innerHTML=S.stage==='setup'?setup():S.stage==='pick'?picker():welcome();
@@ -896,11 +896,11 @@ case 'opencur':S.menu=false;S.sheet='cur';render(true);break;
 case 'setcur':S.cur=el.dataset.c;S.sheet=false;if(S.user)S.user.cur=S.cur;render(true);toast('Prices now in '+CUR[S.cur].n.toLowerCase()+'s');break;
 case 'closesheet':S.sheet=false;render(true);break;
 case 'setcc':S.ci=+el.dataset.i;S.sheet=false;S.pn=S.pn.slice(0,CC[S.ci].len);render(true);document.getElementById('pn').focus();break;
-case 'finish':{if(S.pending&&S.pending.uid)S.pendingUid=S.pending.uid;const okU=checkUser(true),c=CC[S.ci],num=S.pn,pe=document.getElementById('pnerr');const pm=phoneErr();pe.textContent=pm;const okP=!pm;
+case 'finish':{if(SYNC.uid&&S._hOk!==S.un){const v=S.un;if(/^[a-z0-9._]{3,30}$/.test(v)){fetch(API+'/api/handle?h='+encodeURIComponent(v)).then(r=>r.json()).then(j=>{if(j.available){S._hOk=v;el.click()}else{SRV_TAKEN.add(v);checkUser(true)}}).catch(()=>{S._hOk=v;el.click()});break}}if(S.pending&&S.pending.uid)S.pendingUid=S.pending.uid;const okU=checkUser(true),c=CC[S.ci],num=S.pn,pe=document.getElementById('pnerr');const pm=phoneErr();pe.textContent=pm;const okP=!pm;
 if(!okU){document.getElementById('un').focus();break}if(!okP){document.getElementById('pn').focus();break}
-const u={name:S.pending.name,email:S.pending.email,handle:S.un,k:c.k,cur:CUR_OF[c.k],phone:c.code+' '+num.replace(/^(\d{4})/,'$1 ')};u.id=REG[u.email]?u.email+'#'+Date.now().toString(36):u.email;REG[u.id]=u;markSigned(u);S.newStore=false;S.user=u;S.cur=u.cur;seedChats();
+const u={uid:SYNC.uid||undefined,name:S.pending.name,email:S.pending.email,handle:S.un,k:c.k,cur:CUR_OF[c.k],phone:c.code+' '+num.replace(/^(\d{4})/,'$1 ')};u.id=REG[u.email]?u.email+'#'+Date.now().toString(36):u.email;REG[u.id]=u;markSigned(u);S.newStore=false;S.user=u;S.cur=u.cur;seedChats();
 MEM.unshift({n:u.name,h:u.handle,k:c.k,ph:u.phone,t:Date.now(),real:1});DASH.fresh=u.handle;S.pending=null;S.stage='none';afterAuth();render();toast('Welcome to myboutki, @'+u.handle);break}
-case 'logout':fbOut();S.menu=false;if(S.user)S.signed=(S.signed||[]).filter(k=>REG[k]&&REG[k].email!==S.user.email);S.user=null;S.stage='none';S.pending=null;S.sheet=false;S.stack=[];S.tab='feed';S.chats=S.chats;render();toast('Signed out');break;
+case 'logout':fbOut();SYNC.uid='';SYNC.email='';S.menu=false;if(S.user)S.signed=(S.signed||[]).filter(k=>REG[k]&&REG[k].email!==S.user.email);S.user=null;S.stage='none';S.pending=null;S.sheet=false;S.stack=[];S.tab='feed';S.chats=S.chats;render();toast('Signed out');break;
 case 'authclose':S.stage='none';S.pending=null;S.sheet=false;S.after=null;render();break;
 case 'tab':S.tab=el.dataset.t;S.stack=[];if(S.tab!=='cart')S.sent=[];render();break;
 case 'back':appBack();break;
@@ -1199,7 +1199,7 @@ else if(j.paid&&u&&j.handle===u.handle&&/^verified-/.test(j.product||'')){const 
 u.ver={...v,status:'active',plan,since:v.since||Date.now(),until:from+(j.days||30)*864e5,cancel:false,paid:[...(v.paid||[]),{id,at:Date.now(),amount:j.amount,currency:j.currency,product:j.product}]};
 S.stack=[{k:'verify'}];render();queueSave();toast('Payment received — your shop is verified')}
 else if(j.paid)toast('Payment received. Sign in with the same account to see your badge.');else toast('Payment was not completed. You have not been charged.')}catch(_){toast("Couldn't check the payment. Refresh to try again.")}}
-function applyCfg(c){if(!c||!c.verified)return;const v=c.verified;PLANS.monthly.price=v.monthlyUsd;PLANS.monthly.mo=v.monthlyUsd;PLANS.yearly.price=v.yearlyUsd;PLANS.yearly.mo=Math.round(v.yearlyUsd/12*100)/100;PAYKWD.monthly=v.monthlyKwd;PAYKWD.yearly=v.yearlyKwd;
+function applyCfg(c){if(!c||!c.verified)return;if(c.showSamples===false){for(let i=P.length-1;i>=0;i--)if(P[i].id<100&&!P[i].remote&&['noor.abayas','cheetah.watches','q8.menswear','thepinkstore'].includes(P[i].s))P.splice(i,1)}const v=c.verified;PLANS.monthly.price=v.monthlyUsd;PLANS.monthly.mo=v.monthlyUsd;PLANS.yearly.price=v.yearlyUsd;PLANS.yearly.mo=Math.round(v.yearlyUsd/12*100)/100;PAYKWD.monthly=v.monthlyKwd;PAYKWD.yearly=v.yearlyKwd;
 if(c.boost){USD_KWD=c.boost.usdToKwd;BCFG={minDaily:c.boost.minDaily,maxDaily:c.boost.maxDaily,days:c.boost.days}}}
 function loadCfg(){try{applyCfg(JSON.parse(localStorage.getItem('mb_cfg')||'null'))}catch(_){}
 fetch(PAY_API+'/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{applyCfg(c);try{localStorage.setItem('mb_cfg',JSON.stringify(c))}catch(_){}if(S.stage==='none')render(true)}).catch(()=>{})}
@@ -1214,7 +1214,7 @@ function loadShopStats(){const h=me();if(!h||!S.sd)return;const want=S.sd.days;S
 const FB_CFG={apiKey:"AIzaSyDMIqQ41Oedco4163S9_mxzR4lGxEwHbYo",authDomain:/(^|\.)myboutki\.com$/.test(location.hostname)?location.host:"myboutki.firebaseapp.com",projectId:"myboutki",storageBucket:"myboutki.firebasestorage.app",messagingSenderId:"757704906396",appId:"1:757704906396:web:a35f81f10838edf0753f59"};
 const FBV='11.0.2';let fbP=null;
 function fbLoad(){return fbP||(fbP=Promise.all([import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth.js`)]).then(([A,U])=>{const app=A.initializeApp(FB_CFG),auth=U.getAuth(app);return {U,auth}}).catch(e=>{fbP=null;throw e}))}
-function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];
+async function fbAccount(fu){const em=(fu.email||'').toLowerCase(),n=fu.displayName||em.split('@')[0];SYNC.uid=fu.uid;SYNC.email=em;try{await syncMe()}catch(_){}
 const mine=storesOf(em);if(mine.length){S.user=mine[0];markSigned(S.user);S.cur=S.user.cur;seedChats();S.stage='none';afterAuth();render();toast('Welcome back, @'+S.user.handle)}
 else{S.pending={name:n,email:em,uid:fu.uid};S.un=n.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'').slice(0,24)||em.split('@')[0].replace(/[^a-z0-9._]/g,'');S.pn='';S.ci=0;S.stage='setup';render()}}
 async function fbGoogle(el){const t=el&&el.innerHTML;if(el){el.style.pointerEvents='none';el.style.opacity='.75';el.textContent=tr('Opening Google…')}
@@ -1223,12 +1223,48 @@ if(innerWidth<900||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){saveNo
 fbAccount(r.user)}catch(e){if(!/popup-closed|cancelled-popup/.test(e&&e.code||''))toast("Couldn't sign in with Google. Please try again.")}finally{if(el&&el.isConnected){el.style.pointerEvents='';el.style.opacity='';el.innerHTML=t}}}
 function fbOut(){fbLoad().then(({U,auth})=>U.signOut(auth)).catch(()=>{})}
 async function fbRedirectResult(){if(S.user)return;try{const {U,auth}=await fbLoad(),r=await U.getRedirectResult(auth);if(r&&r.user)fbAccount(r.user)}catch(_){}}
+// ---------- server sync ----------
+const API=PAY_API;let SYNC={on:false,t:0,busy:false,email:'',uid:'',lastPull:0};
+async function fbToken(){try{const {auth}=await fbLoad();if(auth.authStateReady)await auth.authStateReady();const u=auth.currentUser;if(!u)return null;SYNC.email=(u.email||'').toLowerCase();SYNC.uid=u.uid;return await u.getIdToken()}catch(_){return null}}
+async function api(method,path,body,raw){const tok=await fbToken();if(!tok)throw Object.assign(new Error('signin'),{code:401});const r=await fetch(API+path,{method,headers:{Authorization:'Bearer '+tok,...(raw?{'Content-Type':raw.type||'image/jpeg'}:{'Content-Type':'application/json'})},body:raw||(body?JSON.stringify(body):undefined)});let j=null;try{j=await r.json()}catch(_){}if(!r.ok)throw Object.assign(new Error((j&&j.error)||('Error '+r.status)),{code:r.status,j});return j}
+async function upImg(u){if(typeof u!=='string')return null;if(/^\/(u|img)\//.test(u))return u;if(u.startsWith('blob:')){const b=await (await fetch(u)).blob();const j=await api('POST','/api/upload',null,b);return j.url}return null}
+const isMine=h=>Object.values(REG).some(r=>r.handle===h&&r.uid&&r.uid===SYNC.uid);
+function srvStore(s){const ex=Object.values(REG).find(r=>r.handle===s.handle);if(ex&&ex.uid&&ex.uid===SYNC.uid)return ex;const r=ex||{};Object.assign(r,{handle:s.handle,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur,ver:s.ver&&s.ver.status==='active'?{...s.ver}:r.ver&&r.ver.status!=='active'?r.ver:null,srv:1});if(!ex){r.id='srv:'+s.handle;r.email='srv:'+s.handle;REG[r.id]=r}return r}
+async function syncPull(){try{const r=await fetch(API+'/api/feed',{cache:'no-store'});const j=await r.json();if(!j||!j.posts)return;SYNC.lastPull=Date.now();
+const keep=new Set();(j.stores||[]).forEach(s=>{SRV_TAKEN.add(s.handle);srvStore(s)});
+for(const sp of j.posts){keep.add(String(sp.id));if(isMine(sp.s))continue;const x=P.find(p=>String(p.id)===String(sp.id));if(x)Object.assign(x,sp,{remote:1,cm:x.cm||[],l:x.l||0});else P.push({...sp,remote:1,cm:[],l:0})}
+for(let i=P.length-1;i>=0;i--){const x=P[i];if(x.remote&&!keep.has(String(x.id))&&!isMine(x.s))P.splice(i,1)}
+if(S.wantPost&&P.some(p=>p.id===S.wantPost)){S.stack=[{k:'detail',id:S.wantPost}];S.wantPost=0;render();return}if(S.wantShop&&P.some(p=>p.s===S.wantShop)){S.stack=[{k:'seller',s:S.wantShop}];S.wantShop=0;render();return}if(S.stage==='none'&&!document.activeElement?.matches('input,textarea'))render(true)}catch(_){}}
+async function syncMe(){const j=await api('GET','/api/me');SYNC.email=j.user.email;SYNC.uid=j.user.uid;
+for(const s of j.stores){let r=Object.values(REG).find(x=>x.handle===s.handle&&x.email===SYNC.email);if(!r){r=Object.values(REG).find(x=>x.handle===s.handle)||{};if(r.id)delete REG[r.id];r.id=storesOf(SYNC.email).length?SYNC.email+'#'+s.handle:SYNC.email;REG[r.id]=r}
+Object.assign(r,{handle:s.handle,email:SYNC.email,uid:SYNC.uid,name:s.name,bio:s.bio,avatar:s.avatar,links:s.links,hl:s.hl,k:s.k,phone:s.phone,cur:s.cur||r.cur||'KWD',srvOk:1});delete r.srv;if(s.ver&&s.ver.status==='active')r.ver={...(r.ver||{}),...s.ver};r._sh=storeSig(r)}
+const rm=new Set((j.removed||[]).map(String));for(let i=P.length-1;i>=0;i--){if(rm.has(String(P[i].id))){P.splice(i,1)}}
+for(const sp of j.posts){const x=P.find(p=>String(p.id)===String(sp.id));if(x){if(sp.boost)x.boost=sp.boost;x.synced=1;x.remote=0;if(!x._sh)x._sh=postSig(x)}else{const n={...sp,cm:[],l:sp.l||0,synced:1,remote:0};n._sh=postSig(n);P.push(n)}}
+P.sort((a,b)=>b.at-a.at);return j}
+const storeSig=r=>JSON.stringify([r.handle,r.name,r.bio,r.avatar,r.links,r.hl,r.k,r.phone,r.cur]);
+const postSig=x=>JSON.stringify([x.s,x.h,x.d,x.p,x.c,x.imgs,!!x.sold,x.rp]);
+function queueSync(){if(!SYNC.uid)return;clearTimeout(SYNC.t);SYNC.t=setTimeout(syncPush,1200)}
+async function syncPush(){if(SYNC.busy||!SYNC.uid){return}SYNC.busy=true;try{
+const mine=Object.values(REG).filter(r=>r.email===SYNC.email&&r.handle);
+for(const r of mine){if(r.syncErr===r.handle)continue;
+ if(!r.srvOk){try{await api('POST','/api/stores',{handle:r.handle,name:r.name,phone:r.phone,k:r.k,cur:r.cur,bio:r.bio||''});r.srvOk=1;r.uid=SYNC.uid;r.srvHandle=r.handle;r._sh=''}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Change your username in Edit profile.')}continue}}
+ if(storeSig(r)!==r._sh){try{const av=r.avatar?await upImg(r.avatar):null;const hl=[];for(const x of r.hl||[])hl.push({...x,cover:x.cover?await upImg(x.cover):null});
+  const old=r.srvHandle||r.handle;const j=await api('PUT','/api/stores/'+encodeURIComponent(old),{handle:r.handle,name:r.name,bio:r.bio,avatar:av,links:r.links||[],hl,k:r.k,phone:r.phone,cur:r.cur});r.srvHandle=j.store.handle;r._sh=storeSig(r)}catch(e){if(e.code===409){r.syncErr=r.handle;toast('@'+r.handle+' is already taken. Choose another username.')}}}}
+const hs=new Set(mine.filter(r=>r.srvOk).map(r=>r.handle));
+let done=new Set(JSON.parse(localStorage.getItem('mb_synced')||'[]'));
+for(const x of P.filter(p=>hs.has(p.s))){if(x.imgs&&x.imgs.some(u=>typeof u==='string'&&u.startsWith('loading:')))continue;if(postSig(x)===x._sh&&x.synced)continue;
+ try{const imgs=[];for(const u of x.imgs||[]){const v=await upImg(u);if(v)imgs.push(v)}if(!imgs.length)continue;const j=await api('PUT','/api/posts/'+x.id,{s:x.s,h:x.h,d:x.d,p:x.p,c:x.c,imgs,ic:x.ic,bg:x.bg,fg:x.fg,sold:!!x.sold,soldAt:x.soldAt,soldPrice:x.soldPrice,rp:x.rp,at:x.at});x.imgs=imgs;x.synced=1;x._sh=postSig(x);done.add(String(x.id))}catch(e){if(e.code===410){const i=P.indexOf(x);if(i>=0)P.splice(i,1);toast('One of your posts was removed by myboutki')}}}
+for(const id of [...done]){const x=P.find(p=>String(p.id)===id);if(!x||(!hs.has(x.s)&&!isMine(x.s))){if(!x){try{await api('DELETE','/api/posts/'+id)}catch(_){}}done.delete(id)}}
+localStorage.setItem('mb_synced',JSON.stringify([...done]));queueSave()}catch(_){}finally{SYNC.busy=false}}
+async function syncStart(){const tok=await fbToken();if(!tok)return;try{await syncMe();SYNC.on=true;render(true);queueSync()}catch(_){}}
+setInterval(()=>{if(document.visibilityState==='visible'){syncPull();if(SYNC.uid)syncMe().then(()=>render(true)).catch(()=>{})}},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-SYNC.lastPull>15000)syncPull()});
 async function boot(){let st=null;try{st=await Promise.race([idbGet('state'),new Promise(r=>setTimeout(()=>r(undefined),800))])}catch(_){}
 if(!st){try{st=JSON.parse(localStorage.getItem('myboutki_state')||'null')}catch(_){}}
 try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\/ar(\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
-{const qq=new URLSearchParams(location.search).get('q');if(qq){S.tab='explore';S.q=qq.slice(0,60)}}{const mp=path.match(/\/p\/(\d+)/),ms=path.match(/\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
-const fromPay=/\/pay\/return/.test(location.pathname);loadCfg();applyLang();render();payReturn();fbRedirectResult();{const warm=()=>{removeEventListener('pointerdown',warm,true);fbLoad().catch(()=>{})};addEventListener('pointerdown',warm,true);setTimeout(()=>(window.requestIdleCallback||setTimeout)(warm),6000)}if(S.user&&!fromPay)setTimeout(()=>toast('Welcome back, @'+S.user.handle),300)}
+{const qq=new URLSearchParams(location.search).get('q');if(qq){S.tab='explore';S.q=qq.slice(0,60)}}{const mp=path.match(/\/p\/(\d+)/),ms=path.match(/\/@([a-z0-9._]+)/i);if(mp&&P.some(p=>p.id===+mp[1]))S.stack=[{k:'detail',id:+mp[1]}];else if(ms&&P.some(p=>p.s===ms[1]))S.stack=[{k:'seller',s:ms[1]}];else if(mp)S.wantPost=+mp[1];else if(ms)S.wantShop=ms[1];if(mp||ms)try{history.replaceState(null,'',S.lang==='ar'?'/ar/':'/')}catch(_){}}
+const fromPay=/\/pay\/return/.test(location.pathname);loadCfg();applyLang();render();payReturn();fbRedirectResult();syncPull();setTimeout(()=>syncStart(),400);{const warm=()=>{removeEventListener('pointerdown',warm,true);fbLoad().catch(()=>{})};addEventListener('pointerdown',warm,true);setTimeout(()=>(window.requestIdleCallback||setTimeout)(warm),6000)}if(S.user&&!fromPay)setTimeout(()=>toast('Welcome back, @'+S.user.handle),300)}
 new MutationObserver(queueSave).observe(app,{childList:true});
 document.documentElement.lang=S.lang;let i18nQ=0;new MutationObserver(()=>{if(S.lang!=='ar'||i18nQ)return;i18nQ=1;queueMicrotask(()=>{i18nQ=0;i18n(app)})}).observe(app,{childList:true,subtree:true});
 addEventListener('pagehide',saveNow);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});

@@ -4,10 +4,11 @@ services:
     image: node:22-alpine
     restart: unless-stopped
     working_dir: /app
-    command: ["node", "pay.js"]
+    command: ["node", "--experimental-sqlite", "--no-warnings", "pay.js"]
     volumes:
       - /opt/myboutki/server:/app:ro
       - /opt/myboutki/data:/data
+      - /var/www/myboutki.com:/site:ro
     ports:
       - "127.0.0.1:18090:8080"
     environment:
