@@ -21,36 +21,72 @@ body{background:var(--bg)}.dash,.switch{display:none!important}
 .phone,.phone[style]{width:100%!important;height:100dvh!important;border:0!important;border-radius:0!important;box-shadow:none!important;position:relative!important;top:0!important}
 .pv{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 12px;background:var(--goldsoft);color:var(--ink);font-size:12px;line-height:1.3;text-align:center;flex:none}
 .pv button{font-size:16px;line-height:1;opacity:.6;padding:2px 4px}
-.side-brand{display:none}
+.side-brand{display:none}.xfoot{flex:none;display:flex;flex-direction:column}.xfoot>*{flex:none}
+.rail{display:none}
 @media(min-width:900px){
- #app{display:grid!important;grid-template-columns:240px minmax(0,1fr);grid-auto-rows:auto;grid-template-rows:auto auto minmax(0,1fr)}
+ #app{display:grid!important;grid-template-columns:244px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto}
+ #app>.pv{grid-row:1}#app>.bar{grid-row:2}#app>.body{grid-row:3}#app>.xfoot{grid-row:4}
  #app>.pv{grid-column:2}
- #app>.nav{grid-column:1;grid-row:1 / span 3;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:4px;border-top:0;border-inline-end:1px solid var(--line);padding:22px 12px;order:-1}
- #app>.bar,#app>.body{grid-column:2;width:100%;max-width:640px;margin:0 auto;box-sizing:border-box}
- #app>.body{border-inline:1px solid var(--line);min-height:0}
- #app>.bar{border-inline:1px solid var(--line)}
- .nav button{width:auto!important;height:50px!important;display:flex!important;align-items:center;gap:14px;padding:0 12px!important;border-radius:10px;justify-content:flex-start!important;font-size:16px;color:var(--ink)!important}
+ #app>.nav{grid-column:1;grid-row:1 / -1;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:6px;border-top:0;border-inline-end:1px solid var(--line);padding:26px 12px 20px;order:-1}
+ #app>.bar,#app>.body{grid-column:2;width:100%;box-sizing:border-box}
+ #app>.bar{max-width:975px;margin:0 auto;border-bottom-color:transparent;padding-inline:24px}
+ #app>.body{padding:0 24px 40px}
+ #app>.body>*{max-width:935px;margin-inline:auto}
+ #app[data-v=feed]>.bar>span[dir=ltr]{visibility:hidden}
+ #app[data-v=feed]>.body{display:grid;grid-template-columns:minmax(0,560px) 320px;justify-content:center;column-gap:64px;align-items:start}
+ #app[data-v=feed]>.body>*{max-width:none;margin:0}
+ .fcol article{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:8px}
+ .fcol article img{border-radius:6px}
+ .rail{display:block;position:sticky;top:24px;padding-top:28px;font-size:14px}
+ .rcard{border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:24px;background:var(--soft)}
+ .rlinks{margin-top:26px;font-size:12px;color:var(--muted);line-height:1.8}.rlinks a{color:var(--muted);text-decoration:none}.rlinks a:hover{text-decoration:underline}
+ #app:is([data-v=sell],[data-v=cart],[data-v=edit],[data-v=hl],[data-v=verify],[data-v=chat],[data-v=inbox],[data-v=settings],[data-v=auth])>.body>*{max-width:600px}
+ #app[data-v=detail]>.body>*{max-width:760px}
+ .grid{gap:4px!important}
+ #app>.xfoot{grid-column:2;width:100%;max-width:808px;margin:0 auto;padding:0 24px;box-sizing:border-box}
+ #app:is([data-v=seller],[data-v=profile]) .igp{max-width:760px;margin-inline:auto;padding-top:24px!important;padding-bottom:12px}
+ .igp .ring{transform:scale(1.25);transform-origin:center;margin:14px 28px 14px 14px}
+ .nav button{width:auto!important;height:50px!important;display:flex!important;align-items:center;gap:16px;padding:0 12px!important;border-radius:10px;justify-content:flex-start!important;font-size:16px;color:var(--ink)!important;transition:background .15s}
  .nav button:hover{background:var(--soft)}
+ .nav button:hover .ms{transform:scale(1.08)}
  .nav button.on{font-weight:700}
  .nav button::after{content:attr(data-l)}
  .nav .badge{left:30px!important;right:auto!important}
- .side-brand{display:flex;align-items:center;gap:2px;padding:6px 12px 26px;text-decoration:none;color:var(--ink)}
- .sheetwrap{left:240px!important}
- .sheet{max-width:560px;margin-inline:auto}
+ .side-brand{display:flex;align-items:center;gap:2px;padding:4px 12px 30px;text-decoration:none;color:var(--ink)}
+ .sheetwrap{left:244px!important}
+ .sheet{max-width:560px;margin-inline:auto;border-radius:20px 20px 0 0}
 }
-@media(min-width:1200px){#app>.bar,#app>.body{max-width:720px}}
+@media(min-width:1280px){#app{grid-template-columns:300px minmax(0,1fr)}#app>.nav{padding-inline:20px}.sheetwrap{left:300px!important}}
+@media(min-width:900px) and (max-width:1159px){#app[data-v=feed]>.body{grid-template-columns:minmax(0,600px)}#app[data-v=feed] .rail{display:none}}
+@media(min-width:900px){.phone[dir=rtl] .nav .badge{right:30px!important;left:auto!important}.phone[dir=rtl] .igp .ring{margin:14px 14px 14px 28px}}
 """
 R("</style>",WEBCSS+"</style>")
 # nav: brand + text labels (translated via data-l set in JS)
 R('<nav class="nav">${','<nav class="nav"><a class="side-brand" href="/" data-a="tab" data-t="feed" dir="ltr" data-notr><img src="/img/mark.svg" alt="" style="height:34px"><span class="brand" style="font-size:25px">boutki</span></a>${')
 R('class="${S.tab===t?\'on\':\'\'}" aria-label="${l}">','class="${S.tab===t?\'on\':\'\'}" aria-label="${l}" data-l="${tr(l)}">')
+
+# 3b. wide desktop layout: right rail on feed, view-aware widths
+R("if(S.tab==='feed')return [","if(S.tab==='feed')return [")
+s=s.replace(",stories()+(()=>{const l=vSort(P.filter(x=>S.fcat==='All'||x.c===S.fcat));return l.length?l.map(post).join(''):`<p class=\"muted\" style=\"text-align:center;padding:60px 24px\">No posts in ${esc(S.fcat)} yet.</p>`})(),1];",
+ ",'<div class=\"fcol\">'+stories()+(()=>{const l=vSort(P.filter(x=>S.fcat==='All'||x.c===S.fcat));return l.length?l.map(post).join(''):`<p class=\"muted\" style=\"text-align:center;padding:60px 24px\">No posts in ${esc(S.fcat)} yet.</p>`})()+'</div>'+rail(),1];",1)
+assert 'rail(),1]' in s
+R("function stories(){","""function rail(){const shops=[...new Set(vSort(P).map(p=>p.s))].filter(h=>h!==me()).slice(0,6),u=S.user;
+const meRow=u?`<div class="row" style="gap:12px;margin-bottom:22px"><button data-a="tab" data-t="profile">${av(u.handle,48)}</button><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${esc(u.handle)}</div><div class="muted" style="font-size:14px">${esc(u.name)}</div></div><button data-a="tab" data-t="sell" style="color:${FOLLOW};font-size:13px;font-weight:600">Sell</button></div>`
+:`<div class="rcard"><div style="font-weight:600;font-size:15px;margin-bottom:4px">Open your shop on myboutki</div><p class="muted" style="font-size:13px;margin:0 0 12px">Post items, get orders on WhatsApp. No shop rent.</p><button class="pri w" data-a="tab" data-t="sell" style="height:40px">Start selling</button></div>`;
+return `<aside class="rail">${meRow}<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="muted" style="font-weight:600;font-size:14px">Suggested shops</span><button data-a="tab" data-t="explore" style="font-size:12px;font-weight:600">See all</button></div>
+${shops.map(h=>{const f=S.follow.has(h);return `<div class="row" style="gap:12px;padding:7px 0"><button data-a="seller" data-s="${esc(h)}">${av(h,44)}</button><button data-a="seller" data-s="${esc(h)}" style="flex:1;min-width:0;text-align:start"><div class="row" style="gap:3px;font-weight:600;font-size:14px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h)}</span>${VB(h,14)}</div><div class="muted" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nameOf(h))}</div></button><button data-a="follow" data-s="${esc(h)}" style="font-size:12px;font-weight:600;color:${f?'var(--ink)':FOLLOW}">${f?'Following':'Follow'}</button></div>`}).join('')}
+<div class="rlinks"><a href="/about/">About</a> · <a href="${S.lang==='ar'?'/':'/ar/'}" data-notr>${S.lang==='ar'?'English':'العربية'}</a> · <a href="mailto:support@myboutki.com">Support</a> · <a href="/sitemap.xml">Sitemap</a><div style="margin-top:12px" data-notr dir="ltr">© ${new Date().getFullYear()} MYBOUTKI · Kuwait · Saudi Arabia · UAE · Bahrain · Qatar · Oman</div></div></aside>`}
+function stories(){""")
+
 # 4. preview banner (honest: no real accounts yet)
 R("app.innerHTML=h+`<div class=\"body\">${b}</div>`","app.innerHTML=(S.pvOff?'':`<div class=\"pv\" role=\"note\"><span>Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.</span><button data-a=\"pvoff\" aria-label=\"Dismiss\">×</button></div>`)+h+`<div class=\"body\">${b}</div>`")
 R("case 'pcat':","case 'pvoff':S.pvOff=1;try{sessionStorage.setItem('mb_pv','1')}catch(_){}render(true);break;\ncase 'pcat':")
 R("S={lang:'en',","S={pvOff:(()=>{try{return sessionStorage.getItem('mb_pv')==='1'}catch(_){return 0}})(),lang:'en',")
 m=re.search(r'const AR=(\{.*?\});\nconst LOC',s,re.S);d=json.loads(m.group(1))
-d.update({"Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.":"نسخة تجريبية — تطبيق ماي بوتيكي قريباً. الحسابات والمنشورات تُحفظ على هذا الجهاز فقط.","Dismiss":"إغلاق"})
+d.update({"Preview — the myboutki app launches soon. Accounts and posts are saved on this device only.":"نسخة تجريبية — تطبيق ماي بوتيكي قريباً. الحسابات والمنشورات تُحفظ على هذا الجهاز فقط.","Dismiss":"إغلاق","Open your shop on myboutki":"افتح متجرك على ماي بوتيكي","Post items, get orders on WhatsApp. No shop rent.":"انشر منتجاتك واستقبل الطلبات عبر واتساب. بدون إيجار محل.","Start selling":"ابدأ البيع","Suggested shops":"متاجر مقترحة","See all":"عرض الكل","About":"من نحن","Support":"الدعم","Sitemap":"خريطة الموقع"})
 s=s[:m.start(1)]+json.dumps(d,ensure_ascii=False)+s[m.end(1):]
+R("app.innerHTML=(S.pvOff?","app.dataset.v=S.stage!=='none'?'auth':(S.stack.length?S.stack[S.stack.length-1].k:S.tab);app.innerHTML=(S.pvOff?")
+R("(typeof n==='string'?n:'')","(typeof n==='string'&&n?`<div class=\"xfoot\">${n}</div>`:'')")
 # 5. deep links + language from URL
 R("try{restore(st)}catch(_){}\napplyLang();render();","""try{restore(st)}catch(_){}
 const path=location.pathname;if(/^\\/ar(\\/|$)/.test(path)&&!(st&&st.lang))S.lang='ar';
