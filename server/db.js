@@ -54,7 +54,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
   const HANDLE = /^[a-z0-9._]{3,30}$/;
   const clean = (v, n) => String(v ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f<>]/g, '').slice(0, n);
   const okUrl = u => typeof u === 'string' && (/^\/u\/[a-f0-9]{32}\.(jpg|png|webp)$/.test(u) || /^\/img\/[a-z0-9_]+\.(jpg|png|svg)$/.test(u));
-  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', calls: d.calls !== false, cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
+  const storeOut = r => { const d = J(r.data); return { handle: r.handle, name: d.name, bio: d.bio || '', avatar: d.avatar || null, links: d.links || [], hl: d.hl || [], k: d.k, phone: d.phone || '', calls: d.calls !== false, role: d.role === 'shopper' ? 'shopper' : 'seller', cur: d.cur, fc: q('SELECT COUNT(*) n FROM follows WHERE t=?').get(r.handle).n, fg: q('SELECT COUNT(*) n FROM follows WHERE f=?').get(r.handle).n, ver: d.ver && d.ver.status === 'active' ? { status: 'active', until: d.ver.until, plan: d.ver.plan } : (d.ver ? { status: d.ver.status } : null), created: r.created }; };
   const postOut = r => ({ ...J(r.data), id: isNaN(+r.id) ? r.id : +r.id, s: r.handle, at: r.at, synced: 1 });
   const ownerOf = h => q('SELECT uid FROM stores WHERE handle=? AND banned=0').get(h);
   const reserved = h => SAMPLE_HANDLES.includes(h) || /^(admin|myboutiki|myboutki|support|help|api|www|root)$/.test(h);
@@ -63,7 +63,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
     const links = (Array.isArray(b.links) ? b.links : d.links || []).slice(0, 4).map(l => ({ u: /^https?:\/\//.test(l.u || '') ? clean(l.u, 300) : '', t: clean(l.t, 30) })).filter(l => l.u);
     const hl = (Array.isArray(b.hl) ? b.hl : d.hl || []).slice(0, 30).map(x => ({ id: +x.id || Date.now(), name: clean(x.name, 15), cover: okUrl(x.cover) ? x.cover : null, items: (Array.isArray(x.items) ? x.items : []).slice(0, 100).map(String) }));
     return { ...d, name: clean(b.name ?? d.name, 60), bio: clean(b.bio ?? d.bio, 150), avatar: b.avatar === null ? null : okUrl(b.avatar) ? b.avatar : d.avatar || null, links, hl,
-      k: /^(KW|SA|AE|BH|QA|OM)$/.test(b.k) ? b.k : d.k || 'KW', phone: clean(b.phone ?? d.phone, 24), calls: typeof b.calls === 'boolean' ? b.calls : d.calls !== false, cur: /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || 'KWD' };
+      k: /^(KW|SA|AE|BH|QA|OM)$/.test(b.k) ? b.k : d.k || 'KW', phone: clean(b.phone ?? d.phone, 24), calls: typeof b.calls === 'boolean' ? b.calls : d.calls !== false, role: b.role === 'shopper' || b.role === 'seller' ? b.role : d.role || 'seller', cur: /^(KWD|SAR|AED|BHD|QAR|OMR)$/.test(b.cur) ? b.cur : d.cur || 'KWD' };
   }
   function sanitizePost(b, d = {}) {
     const imgs = (Array.isArray(b.imgs) ? b.imgs : d.imgs || []).filter(okUrl).slice(0, 10);
@@ -225,7 +225,7 @@ module.exports = function makeDb({ DATA, PROJECT = 'myboutki', SAMPLE_HANDLES = 
       const b = await readBody(req), d = sanitizeStore(b, J(r.data)), nh = String(b.handle || m[1]).toLowerCase(), now = Date.now();
       if (nh !== m[1]) {
         if (!HANDLE.test(nh) || reserved(nh) || q('SELECT 1 FROM stores WHERE handle=?').get(nh)) return json(res, 409, { error: 'That username is taken' }, origin), true;
-        db.exec('BEGIN'); try { q('UPDATE stores SET handle=?,data=?,updated=? WHERE handle=?').run(nh, JSON.stringify(d), now, m[1]); q('UPDATE posts SET handle=? WHERE handle=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET f=? WHERE f=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET t=? WHERE t=?').run(nh, m[1]); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
+        db.exec('BEGIN'); try { q('UPDATE stores SET handle=?,data=?,updated=? WHERE handle=?').run(nh, JSON.stringify(d), now, m[1]); q('UPDATE posts SET handle=? WHERE handle=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET f=? WHERE f=?').run(nh, m[1]); q('UPDATE OR IGNORE follows SET t=? WHERE t=?').run(nh, m[1]); q('UPDATE messages SET f=? WHERE f=?').run(nh, m[1]); q('UPDATE messages SET t=? WHERE t=?').run(nh, m[1]); db.exec('COMMIT'); } catch (e) { db.exec('ROLLBACK'); throw e; }
       } else q('UPDATE stores SET data=?,updated=? WHERE handle=?').run(JSON.stringify(d), now, m[1]);
       return json(res, 200, { ok: true, store: storeOut(q('SELECT * FROM stores WHERE handle=?').get(nh)) }, origin), true;
     }
